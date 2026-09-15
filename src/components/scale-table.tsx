@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 import type { ScaleRow } from "@/lib/design-tokens";
+import { formatBorderRadius, formatBoxShadow } from "@/lib/format-css-value";
 
 /** Reads a live computed style property off a real DOM node rendered with
  *  the row's actual Tailwind class — so a customization anywhere in
@@ -30,45 +31,9 @@ function useComputedProp(prop: ScaleRow["prop"]) {
   return { ref, value };
 }
 
-/** Splits a CSS value list on top-level commas only (ignores commas
- *  nested inside a color function like rgba(0, 0, 0, 0.1)). */
-function splitTopLevel(value: string) {
-  const parts: string[] = [];
-  let depth = 0;
-  let current = "";
-  for (const char of value) {
-    if (char === "(") depth++;
-    if (char === ")") depth--;
-    if (char === "," && depth === 0) {
-      parts.push(current.trim());
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-  if (current.trim()) parts.push(current.trim());
-  return parts;
-}
-
-const INACTIVE_SHADOW_LAYER = /^rgba?\(0,\s*0,\s*0,\s*0\)\s+0px\s+0px\s+0px\s+0px$/i;
-
 function formatValue(prop: ScaleRow["prop"], value: string) {
-  if (prop === "borderRadius") {
-    // Tailwind v4's `rounded-full` is `calc(infinity * 1px)`; browsers
-    // resolve that to their internal max-length clamp, not a literal
-    // "9999px" — show the source expression instead of that huge number.
-    const n = parseFloat(value);
-    if (Number.isFinite(n) && n > 100000) return "calc(infinity × 1px)";
-    return value;
-  }
-  if (prop === "boxShadow") {
-    // box-shadow is composed of several ring/inset placeholder layers
-    // (transparent, zero offset) plus the real shadow layer(s) — drop
-    // the inactive placeholders so the real value is actually visible.
-    const layers = splitTopLevel(value).filter((l) => !INACTIVE_SHADOW_LAYER.test(l));
-    const joined = (layers.length ? layers : splitTopLevel(value)).join(", ");
-    return joined.length > 90 ? `${joined.slice(0, 90)}…` : joined;
-  }
+  if (prop === "borderRadius") return formatBorderRadius(value);
+  if (prop === "boxShadow") return formatBoxShadow(value, 90);
   return value;
 }
 

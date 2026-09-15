@@ -1,4 +1,5 @@
 import { CATEGORY_LABELS, type TokenMatch } from "@/lib/token-dictionary";
+import { TokenValueCell } from "@/components/catalog/token-value";
 
 export function AutoTokenTable({ matches, file }: { matches: TokenMatch[]; file: string }) {
   if (matches.length === 0) {
@@ -18,6 +19,7 @@ export function AutoTokenTable({ matches, file }: { matches: TokenMatch[]; file:
             <th className="px-3 py-2 font-medium">Parte</th>
             <th className="px-3 py-2 font-medium">Classe Tailwind</th>
             <th className="px-3 py-2 font-medium">Token CSS</th>
+            <th className="px-3 py-2 font-medium">Valore</th>
             <th className="px-3 py-2 font-medium">Categoria</th>
           </tr>
         </thead>
@@ -30,6 +32,9 @@ export function AutoTokenTable({ matches, file }: { matches: TokenMatch[]; file:
               </td>
               <td className="whitespace-nowrap px-3 py-2 font-mono text-xs text-muted-foreground">
                 {m.cssVar}
+              </td>
+              <td className="px-3 py-2">
+                <TokenValueCell match={m} />
               </td>
               <td className="whitespace-nowrap px-3 py-2 text-xs text-muted-foreground">
                 {CATEGORY_LABELS[m.category]}
