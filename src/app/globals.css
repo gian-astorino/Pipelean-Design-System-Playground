@@ -1,0 +1,239 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Tailwind v4 only emits a color's CSS variable once a matching utility
+ * class is detected in scanned source. The token playground reads these
+ * variables directly (`var(--color-red-100)`), which the scanner can't
+ * see, so force-generate the full base ramps it needs to display.
+ */
+@source inline("bg-{neutral,red,green,amber,blue}-{50,100,200,300,400,500,600,700,800,900,950}");
+
+/* =====================================================================
+   PIPELEAN DESIGN SYSTEM — DESIGN TOKENS
+   =====================================================================
+   Two layers, on purpose, so a customization always lands in one place
+   and shows up as one clear line in `git diff`:
+
+   1) BASE TOKENS ("primitives")
+      Raw values with no meaning attached: color ramps, the radius scale,
+      font stacks. Tailwind's own palette (neutral, red, green, blue,
+      amber, ...) already ships as base tokens via `@import "tailwindcss"`.
+      Below we only add the tokens Tailwind doesn't provide: the Pipelean
+      brand ramp. Never reference a semantic token from here.
+
+   2) SEMANTIC TOKENS ("roles")
+      Named by purpose (background, primary, destructive, ...), not by
+      value. Every semantic token points at a base token. Light/dark
+      mode is just two different sets of pointers — the roles never
+      change name, only what they resolve to.
+
+   To re-theme Pipelean: change BASE TOKENS (swap the brand ramp) to
+   restyle everything at once, or override a single SEMANTIC TOKEN to
+   restyle just that one role. Either edit is a self-contained diff.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1) BASE TOKENS — primitives
+   --------------------------------------------------------------------- */
+@theme static {
+  /*
+   * Pipelean brand ramp — PLACEHOLDER values (oklch, hue ~262 = indigo).
+   * Swap these 11 stops for the real brand ramp; every semantic token
+   * that says `var(--color-brand-*)` below will follow automatically.
+   */
+  --color-brand-50: oklch(0.97 0.014 262);
+  --color-brand-100: oklch(0.933 0.028 262);
+  --color-brand-200: oklch(0.87 0.055 262);
+  --color-brand-300: oklch(0.789 0.09 262);
+  --color-brand-400: oklch(0.702 0.13 262);
+  --color-brand-500: oklch(0.6 0.18 262);
+  --color-brand-600: oklch(0.52 0.19 262);
+  --color-brand-700: oklch(0.44 0.17 262);
+  --color-brand-800: oklch(0.36 0.14 262);
+  --color-brand-900: oklch(0.29 0.1 262);
+  --color-brand-950: oklch(0.2 0.07 262);
+
+  /* Radius base — every radius utility (sm/md/lg/xl) derives from this. */
+  --radius: 0.625rem;
+
+  /* Font primitives — wired to next/font variables set in layout.tsx. */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ---------------------------------------------------------------------
+   2) SEMANTIC TOKENS — roles, light mode (:root) and dark mode (.dark)
+   --------------------------------------------------------------------- */
+:root {
+  --background: oklch(1 0 0);
+  --foreground: var(--color-neutral-900);
+
+  --card: oklch(1 0 0);
+  --card-foreground: var(--color-neutral-900);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--color-neutral-900);
+
+  --primary: var(--color-brand-600);
+  --primary-foreground: var(--color-brand-50);
+
+  --secondary: var(--color-neutral-100);
+  --secondary-foreground: var(--color-neutral-900);
+
+  --muted: var(--color-neutral-100);
+  --muted-foreground: var(--color-neutral-500);
+
+  --accent: var(--color-brand-50);
+  --accent-foreground: var(--color-brand-700);
+
+  /* Status roles — Pipelean-specific addition on top of stock shadcn,
+     for pipeline/run states (success, warning, info) beyond the
+     default destructive-only vocabulary. */
+  --destructive: var(--color-red-600);
+  --destructive-foreground: var(--color-red-50);
+
+  --success: var(--color-green-600);
+  --success-foreground: var(--color-green-50);
+
+  --warning: var(--color-amber-500);
+  --warning-foreground: var(--color-amber-950);
+
+  --info: var(--color-blue-600);
+  --info-foreground: var(--color-blue-50);
+
+  --border: var(--color-neutral-200);
+  --input: var(--color-neutral-200);
+  --ring: var(--color-brand-500);
+
+  --chart-1: var(--color-brand-500);
+  --chart-2: var(--color-brand-700);
+  --chart-3: var(--color-neutral-400);
+  --chart-4: var(--color-amber-500);
+  --chart-5: var(--color-green-600);
+
+  --sidebar: var(--color-neutral-50);
+  --sidebar-foreground: var(--color-neutral-900);
+  --sidebar-primary: var(--color-brand-600);
+  --sidebar-primary-foreground: var(--color-brand-50);
+  --sidebar-accent: var(--color-neutral-100);
+  --sidebar-accent-foreground: var(--color-neutral-900);
+  --sidebar-border: var(--color-neutral-200);
+  --sidebar-ring: var(--color-brand-500);
+}
+
+.dark {
+  --background: var(--color-neutral-950);
+  --foreground: var(--color-neutral-100);
+
+  --card: var(--color-neutral-900);
+  --card-foreground: var(--color-neutral-100);
+
+  --popover: var(--color-neutral-900);
+  --popover-foreground: var(--color-neutral-100);
+
+  --primary: var(--color-brand-400);
+  --primary-foreground: var(--color-brand-950);
+
+  --secondary: var(--color-neutral-800);
+  --secondary-foreground: var(--color-neutral-100);
+
+  --muted: var(--color-neutral-800);
+  --muted-foreground: var(--color-neutral-400);
+
+  --accent: var(--color-neutral-800);
+  --accent-foreground: var(--color-brand-300);
+
+  --destructive: var(--color-red-500);
+  --destructive-foreground: var(--color-red-50);
+
+  --success: var(--color-green-500);
+  --success-foreground: var(--color-green-50);
+
+  --warning: var(--color-amber-400);
+  --warning-foreground: var(--color-amber-950);
+
+  --info: var(--color-blue-500);
+  --info-foreground: var(--color-blue-50);
+
+  --border: var(--color-neutral-800);
+  --input: var(--color-neutral-800);
+  --ring: var(--color-brand-400);
+
+  --chart-1: var(--color-brand-400);
+  --chart-2: var(--color-brand-300);
+  --chart-3: var(--color-neutral-400);
+  --chart-4: var(--color-amber-400);
+  --chart-5: var(--color-green-500);
+
+  --sidebar: var(--color-neutral-900);
+  --sidebar-foreground: var(--color-neutral-100);
+  --sidebar-primary: var(--color-brand-400);
+  --sidebar-primary-foreground: var(--color-brand-950);
+  --sidebar-accent: var(--color-neutral-800);
+  --sidebar-accent-foreground: var(--color-neutral-100);
+  --sidebar-border: var(--color-neutral-800);
+  --sidebar-ring: var(--color-brand-400);
+}
+
+/* ---------------------------------------------------------------------
+   3) THEME BRIDGE — expose semantic tokens as Tailwind utilities
+   (bg-background, text-primary-foreground, border-border, ...) and
+   derive the radius scale from the single --radius primitive.
+   --------------------------------------------------------------------- */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
