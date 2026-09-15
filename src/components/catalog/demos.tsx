@@ -8,6 +8,7 @@ import {
   Underline as UnderlineIcon,
   ChevronRight,
   Info,
+  TriangleAlert,
   Paperclip,
   FileText,
   Inbox,
@@ -111,6 +112,60 @@ import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+/* ---------------------------------------------------------------------
+   Demo controls — shared dropdown/toggle used by every demo below that
+   has more than one variant, size or error state.
+   --------------------------------------------------------------------- */
+
+function VariantSelect<T extends string>({
+  label,
+  value,
+  onValueChange,
+  options,
+}: {
+  label: string;
+  value: T;
+  onValueChange: (value: T) => void;
+  options: readonly T[];
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <Select value={value} onValueChange={(v) => onValueChange(v as T)}>
+        <SelectTrigger size="sm" className="w-36">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((o) => (
+            <SelectItem key={o} value={o}>
+              {o}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function ErrorToggle({ checked, onCheckedChange }: { checked: boolean; onCheckedChange: (v: boolean) => void }) {
+  return (
+    <div className="flex items-center gap-2">
+      <Switch id="error-toggle" checked={checked} onCheckedChange={onCheckedChange} />
+      <Label htmlFor="error-toggle" className="text-xs text-muted-foreground">
+        Stato di errore
+      </Label>
+    </div>
+  );
+}
+
+function DemoStack({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-col items-center gap-4">{children}</div>;
+}
+
+function DemoControls({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-wrap items-center justify-center gap-4">{children}</div>;
+}
 
 /* ---------------------------------------------------------------------
    Layout
@@ -303,20 +358,28 @@ function PaginationDemo() {
   );
 }
 
+const TABS_VARIANTS = ["default", "line"] as const;
+
 function TabsDemo() {
+  const [variant, setVariant] = React.useState<(typeof TABS_VARIANTS)[number]>("default");
   return (
-    <Tabs defaultValue="overview" className="w-72">
-      <TabsList>
-        <TabsTrigger value="overview">Overview</TabsTrigger>
-        <TabsTrigger value="logs">Log</TabsTrigger>
-      </TabsList>
-      <TabsContent value="overview" className="text-sm text-muted-foreground">
-        Stato attuale della pipeline.
-      </TabsContent>
-      <TabsContent value="logs" className="text-sm text-muted-foreground">
-        Ultime righe di log del run.
-      </TabsContent>
-    </Tabs>
+    <DemoStack>
+      <DemoControls>
+        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={TABS_VARIANTS} />
+      </DemoControls>
+      <Tabs defaultValue="overview" className="w-72">
+        <TabsList variant={variant}>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="logs">Log</TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview" className="text-sm text-muted-foreground">
+          Stato attuale della pipeline.
+        </TabsContent>
+        <TabsContent value="logs" className="text-sm text-muted-foreground">
+          Ultime righe di log del run.
+        </TabsContent>
+      </Tabs>
+    </DemoStack>
   );
 }
 
@@ -324,40 +387,64 @@ function TabsDemo() {
    Form & Input
    --------------------------------------------------------------------- */
 
+const BUTTON_VARIANTS = ["default", "secondary", "outline", "destructive", "ghost", "link"] as const;
+const BUTTON_SIZES = ["default", "xs", "sm", "lg", "icon", "icon-xs", "icon-sm", "icon-lg"] as const;
+
 function ButtonDemo() {
+  const [variant, setVariant] = React.useState<(typeof BUTTON_VARIANTS)[number]>("default");
+  const [size, setSize] = React.useState<(typeof BUTTON_SIZES)[number]>("default");
+  const isIcon = size.startsWith("icon");
+
   return (
-    <div className="flex flex-wrap gap-2">
-      <Button>Default</Button>
-      <Button variant="secondary">Secondary</Button>
-      <Button variant="outline">Outline</Button>
-      <Button variant="destructive">Destructive</Button>
-      <Button variant="ghost">Ghost</Button>
-    </div>
+    <DemoStack>
+      <DemoControls>
+        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={BUTTON_VARIANTS} />
+        <VariantSelect label="Size" value={size} onValueChange={setSize} options={BUTTON_SIZES} />
+      </DemoControls>
+      <Button variant={variant} size={size} aria-label="Continua">
+        {isIcon ? <ChevronRight /> : "Continua"}
+      </Button>
+    </DemoStack>
   );
 }
 
+const ORIENTATIONS = ["horizontal", "vertical"] as const;
+
 function ButtonGroupDemo() {
+  const [orientation, setOrientation] = React.useState<(typeof ORIENTATIONS)[number]>("horizontal");
+
   return (
-    <ButtonGroup>
-      <Button variant="outline" size="icon" aria-label="Grassetto">
-        <Bold />
-      </Button>
-      <Button variant="outline" size="icon" aria-label="Corsivo">
-        <Italic />
-      </Button>
-      <Button variant="outline" size="icon" aria-label="Sottolineato">
-        <UnderlineIcon />
-      </Button>
-    </ButtonGroup>
+    <DemoStack>
+      <DemoControls>
+        <VariantSelect label="Orientation" value={orientation} onValueChange={setOrientation} options={ORIENTATIONS} />
+      </DemoControls>
+      <ButtonGroup orientation={orientation}>
+        <Button variant="outline" size="icon" aria-label="Grassetto">
+          <Bold />
+        </Button>
+        <Button variant="outline" size="icon" aria-label="Corsivo">
+          <Italic />
+        </Button>
+        <Button variant="outline" size="icon" aria-label="Sottolineato">
+          <UnderlineIcon />
+        </Button>
+      </ButtonGroup>
+    </DemoStack>
   );
 }
 
 function CheckboxDemo() {
+  const [error, setError] = React.useState(false);
   return (
-    <div className="flex items-center gap-2">
-      <Checkbox id="demo-notify" defaultChecked />
-      <Label htmlFor="demo-notify">Notifica al termine del run</Label>
-    </div>
+    <DemoStack>
+      <DemoControls>
+        <ErrorToggle checked={error} onCheckedChange={setError} />
+      </DemoControls>
+      <div className="flex items-center gap-2">
+        <Checkbox id="demo-notify" defaultChecked aria-invalid={error} />
+        <Label htmlFor="demo-notify">Notifica al termine del run</Label>
+      </div>
+    </DemoStack>
   );
 }
 
@@ -388,35 +475,55 @@ function FieldDemo() {
 }
 
 function InputDemo() {
-  return <Input placeholder="Cerca pipeline…" className="max-w-sm" />;
+  const [error, setError] = React.useState(false);
+  return (
+    <DemoStack>
+      <DemoControls>
+        <ErrorToggle checked={error} onCheckedChange={setError} />
+      </DemoControls>
+      <Input placeholder="Cerca pipeline…" className="max-w-sm" aria-invalid={error} />
+    </DemoStack>
+  );
 }
 
 function InputGroupDemo() {
+  const [error, setError] = React.useState(false);
   return (
-    <InputGroup className="max-w-sm">
-      <InputGroupInput placeholder="Cerca…" />
-      <InputGroupAddon>
-        <Search />
-      </InputGroupAddon>
-    </InputGroup>
+    <DemoStack>
+      <DemoControls>
+        <ErrorToggle checked={error} onCheckedChange={setError} />
+      </DemoControls>
+      <InputGroup className="max-w-sm">
+        <InputGroupInput placeholder="Cerca…" aria-invalid={error} />
+        <InputGroupAddon>
+          <Search />
+        </InputGroupAddon>
+      </InputGroup>
+    </DemoStack>
   );
 }
 
 function InputOTPDemo() {
+  const [error, setError] = React.useState(false);
   return (
-    <InputOTP maxLength={6}>
-      <InputOTPGroup>
-        <InputOTPSlot index={0} />
-        <InputOTPSlot index={1} />
-        <InputOTPSlot index={2} />
-      </InputOTPGroup>
-      <InputOTPSeparator />
-      <InputOTPGroup>
-        <InputOTPSlot index={3} />
-        <InputOTPSlot index={4} />
-        <InputOTPSlot index={5} />
-      </InputOTPGroup>
-    </InputOTP>
+    <DemoStack>
+      <DemoControls>
+        <ErrorToggle checked={error} onCheckedChange={setError} />
+      </DemoControls>
+      <InputOTP maxLength={6}>
+        <InputOTPGroup>
+          <InputOTPSlot index={0} aria-invalid={error} />
+          <InputOTPSlot index={1} aria-invalid={error} />
+          <InputOTPSlot index={2} aria-invalid={error} />
+        </InputOTPGroup>
+        <InputOTPSeparator />
+        <InputOTPGroup>
+          <InputOTPSlot index={3} aria-invalid={error} />
+          <InputOTPSlot index={4} aria-invalid={error} />
+          <InputOTPSlot index={5} aria-invalid={error} />
+        </InputOTPGroup>
+      </InputOTP>
+    </DemoStack>
   );
 }
 
@@ -430,42 +537,64 @@ function LabelDemo() {
 }
 
 function NativeSelectDemo() {
+  const [error, setError] = React.useState(false);
   return (
-    <NativeSelect defaultValue="eu-west" className="max-w-xs">
-      <NativeSelectOption value="eu-west">eu-west-1</NativeSelectOption>
-      <NativeSelectOption value="us-east">us-east-1</NativeSelectOption>
-      <NativeSelectOption value="ap-south">ap-south-1</NativeSelectOption>
-    </NativeSelect>
+    <DemoStack>
+      <DemoControls>
+        <ErrorToggle checked={error} onCheckedChange={setError} />
+      </DemoControls>
+      <NativeSelect defaultValue="eu-west" className="max-w-xs" aria-invalid={error}>
+        <NativeSelectOption value="eu-west">eu-west-1</NativeSelectOption>
+        <NativeSelectOption value="us-east">us-east-1</NativeSelectOption>
+        <NativeSelectOption value="ap-south">ap-south-1</NativeSelectOption>
+      </NativeSelect>
+    </DemoStack>
   );
 }
 
 function RadioGroupDemo() {
+  const [error, setError] = React.useState(false);
   return (
-    <RadioGroup defaultValue="staging" className="flex flex-col gap-2">
-      {["staging", "production"].map((v) => (
-        <div key={v} className="flex items-center gap-2">
-          <RadioGroupItem value={v} id={`demo-${v}`} />
-          <Label htmlFor={`demo-${v}`} className="capitalize">
-            {v}
-          </Label>
-        </div>
-      ))}
-    </RadioGroup>
+    <DemoStack>
+      <DemoControls>
+        <ErrorToggle checked={error} onCheckedChange={setError} />
+      </DemoControls>
+      <RadioGroup defaultValue="staging" className="flex flex-col gap-2" aria-invalid={error}>
+        {["staging", "production"].map((v) => (
+          <div key={v} className="flex items-center gap-2">
+            <RadioGroupItem value={v} id={`demo-${v}`} aria-invalid={error} />
+            <Label htmlFor={`demo-${v}`} className="capitalize">
+              {v}
+            </Label>
+          </div>
+        ))}
+      </RadioGroup>
+    </DemoStack>
   );
 }
 
+const SELECT_SIZES = ["default", "sm"] as const;
+
 function SelectDemo() {
+  const [size, setSize] = React.useState<(typeof SELECT_SIZES)[number]>("default");
+  const [error, setError] = React.useState(false);
   return (
-    <Select defaultValue="warning">
-      <SelectTrigger className="w-40">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="success">Success</SelectItem>
-        <SelectItem value="warning">Warning</SelectItem>
-        <SelectItem value="info">Info</SelectItem>
-      </SelectContent>
-    </Select>
+    <DemoStack>
+      <DemoControls>
+        <VariantSelect label="Size" value={size} onValueChange={setSize} options={SELECT_SIZES} />
+        <ErrorToggle checked={error} onCheckedChange={setError} />
+      </DemoControls>
+      <Select defaultValue="warning">
+        <SelectTrigger className="w-40" size={size} aria-invalid={error}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="success">Success</SelectItem>
+          <SelectItem value="warning">Warning</SelectItem>
+          <SelectItem value="info">Info</SelectItem>
+        </SelectContent>
+      </Select>
+    </DemoStack>
   );
 }
 
@@ -483,30 +612,57 @@ function SwitchDemo() {
 }
 
 function TextareaDemo() {
-  return <Textarea placeholder="Descrivi il problema…" className="max-w-sm" />;
+  const [error, setError] = React.useState(false);
+  return (
+    <DemoStack>
+      <DemoControls>
+        <ErrorToggle checked={error} onCheckedChange={setError} />
+      </DemoControls>
+      <Textarea placeholder="Descrivi il problema…" className="max-w-sm" aria-invalid={error} />
+    </DemoStack>
+  );
 }
 
+const TOGGLE_VARIANTS = ["default", "outline"] as const;
+const TOGGLE_SIZES = ["default", "sm", "lg"] as const;
+
 function ToggleDemo() {
+  const [variant, setVariant] = React.useState<(typeof TOGGLE_VARIANTS)[number]>("default");
+  const [size, setSize] = React.useState<(typeof TOGGLE_SIZES)[number]>("default");
   return (
-    <Toggle aria-label="Grassetto">
-      <Bold />
-    </Toggle>
+    <DemoStack>
+      <DemoControls>
+        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={TOGGLE_VARIANTS} />
+        <VariantSelect label="Size" value={size} onValueChange={setSize} options={TOGGLE_SIZES} />
+      </DemoControls>
+      <Toggle variant={variant} size={size} aria-label="Grassetto">
+        <Bold />
+      </Toggle>
+    </DemoStack>
   );
 }
 
 function ToggleGroupDemo() {
+  const [variant, setVariant] = React.useState<(typeof TOGGLE_VARIANTS)[number]>("default");
+  const [size, setSize] = React.useState<(typeof TOGGLE_SIZES)[number]>("default");
   return (
-    <ToggleGroup type="single" defaultValue="bold">
-      <ToggleGroupItem value="bold" aria-label="Grassetto">
-        <Bold />
-      </ToggleGroupItem>
-      <ToggleGroupItem value="italic" aria-label="Corsivo">
-        <Italic />
-      </ToggleGroupItem>
-      <ToggleGroupItem value="underline" aria-label="Sottolineato">
-        <UnderlineIcon />
-      </ToggleGroupItem>
-    </ToggleGroup>
+    <DemoStack>
+      <DemoControls>
+        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={TOGGLE_VARIANTS} />
+        <VariantSelect label="Size" value={size} onValueChange={setSize} options={TOGGLE_SIZES} />
+      </DemoControls>
+      <ToggleGroup type="single" defaultValue="bold" variant={variant} size={size}>
+        <ToggleGroupItem value="bold" aria-label="Grassetto">
+          <Bold />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="italic" aria-label="Corsivo">
+          <Italic />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="underline" aria-label="Sottolineato">
+          <UnderlineIcon />
+        </ToggleGroupItem>
+      </ToggleGroup>
+    </DemoStack>
   );
 }
 
@@ -683,27 +839,38 @@ function AccordionDemo() {
   );
 }
 
+const AVATAR_SIZES = ["default", "sm", "lg"] as const;
+
 function AvatarDemo() {
+  const [size, setSize] = React.useState<(typeof AVATAR_SIZES)[number]>("default");
   return (
-    <div className="flex gap-2">
-      <Avatar>
-        <AvatarFallback>PL</AvatarFallback>
-      </Avatar>
-      <Avatar>
-        <AvatarFallback>AB</AvatarFallback>
-      </Avatar>
-    </div>
+    <DemoStack>
+      <DemoControls>
+        <VariantSelect label="Size" value={size} onValueChange={setSize} options={AVATAR_SIZES} />
+      </DemoControls>
+      <div className="flex items-center gap-2">
+        <Avatar size={size}>
+          <AvatarFallback>PL</AvatarFallback>
+        </Avatar>
+        <Avatar size={size}>
+          <AvatarFallback>AB</AvatarFallback>
+        </Avatar>
+      </div>
+    </DemoStack>
   );
 }
 
+const BADGE_VARIANTS = ["default", "secondary", "outline", "destructive", "ghost", "link"] as const;
+
 function BadgeDemo() {
+  const [variant, setVariant] = React.useState<(typeof BADGE_VARIANTS)[number]>("default");
   return (
-    <div className="flex flex-wrap gap-2">
-      <Badge>Default</Badge>
-      <Badge variant="secondary">Secondary</Badge>
-      <Badge variant="outline">Outline</Badge>
-      <Badge variant="destructive">Destructive</Badge>
-    </div>
+    <DemoStack>
+      <DemoControls>
+        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={BADGE_VARIANTS} />
+      </DemoControls>
+      <Badge variant={variant}>Badge</Badge>
+    </DemoStack>
   );
 }
 
@@ -800,24 +967,35 @@ function EmptyDemo() {
   );
 }
 
+const ITEM_VARIANTS = ["default", "outline", "muted"] as const;
+const ITEM_SIZES = ["default", "sm"] as const;
+
 function ItemDemo() {
+  const [variant, setVariant] = React.useState<(typeof ITEM_VARIANTS)[number]>("outline");
+  const [size, setSize] = React.useState<(typeof ITEM_SIZES)[number]>("default");
   return (
-    <ItemGroup className="max-w-md gap-2">
-      <Item variant="outline">
-        <ItemMedia>
-          <FileText className="size-4" />
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle>deploy.yml</ItemTitle>
-          <ItemDescription>Aggiornato 2h fa</ItemDescription>
-        </ItemContent>
-        <ItemActions>
-          <Button size="sm" variant="ghost">
-            Apri
-          </Button>
-        </ItemActions>
-      </Item>
-    </ItemGroup>
+    <DemoStack>
+      <DemoControls>
+        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={ITEM_VARIANTS} />
+        <VariantSelect label="Size" value={size} onValueChange={setSize} options={ITEM_SIZES} />
+      </DemoControls>
+      <ItemGroup className="max-w-md gap-2">
+        <Item variant={variant} size={size}>
+          <ItemMedia>
+            <FileText className="size-4" />
+          </ItemMedia>
+          <ItemContent>
+            <ItemTitle>deploy.yml</ItemTitle>
+            <ItemDescription>Aggiornato 2h fa</ItemDescription>
+          </ItemContent>
+          <ItemActions>
+            <Button size="sm" variant="ghost">
+              Apri
+            </Button>
+          </ItemActions>
+        </Item>
+      </ItemGroup>
+    </DemoStack>
   );
 }
 
@@ -830,22 +1008,30 @@ function KbdDemo() {
   );
 }
 
+const MARKER_VARIANTS = ["default", "separator", "border"] as const;
+
 function MarkerDemo() {
+  const [variant, setVariant] = React.useState<(typeof MARKER_VARIANTS)[number]>("default");
   return (
-    <div className="flex flex-col gap-1">
-      <Marker>
-        <MarkerIcon>
-          <ChevronRight className="size-4" />
-        </MarkerIcon>
-        <MarkerContent>Build completata</MarkerContent>
-      </Marker>
-      <Marker>
-        <MarkerIcon>
-          <ChevronRight className="size-4" />
-        </MarkerIcon>
-        <MarkerContent>Deploy in corso</MarkerContent>
-      </Marker>
-    </div>
+    <DemoStack>
+      <DemoControls>
+        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={MARKER_VARIANTS} />
+      </DemoControls>
+      <div className="flex w-64 flex-col gap-1">
+        <Marker variant={variant}>
+          <MarkerIcon>
+            <ChevronRight className="size-4" />
+          </MarkerIcon>
+          <MarkerContent>Build completata</MarkerContent>
+        </Marker>
+        <Marker variant={variant}>
+          <MarkerIcon>
+            <ChevronRight className="size-4" />
+          </MarkerIcon>
+          <MarkerContent>Deploy in corso</MarkerContent>
+        </Marker>
+      </div>
+    </DemoStack>
   );
 }
 
@@ -881,13 +1067,27 @@ function TableDemo() {
    Feedback
    --------------------------------------------------------------------- */
 
+const ALERT_VARIANTS = ["default", "destructive"] as const;
+
 function AlertDemo() {
+  const [variant, setVariant] = React.useState<(typeof ALERT_VARIANTS)[number]>("default");
   return (
-    <Alert className="max-w-md">
-      <Info />
-      <AlertTitle>Nuova versione disponibile</AlertTitle>
-      <AlertDescription>Aggiorna la CLI di Pipelean alla 2.4.0.</AlertDescription>
-    </Alert>
+    <DemoStack>
+      <DemoControls>
+        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={ALERT_VARIANTS} />
+      </DemoControls>
+      <Alert variant={variant} className="max-w-md">
+        {variant === "destructive" ? <TriangleAlert /> : <Info />}
+        <AlertTitle>
+          {variant === "destructive" ? "Run fallito" : "Nuova versione disponibile"}
+        </AlertTitle>
+        <AlertDescription>
+          {variant === "destructive"
+            ? "Lo step di deploy è terminato con errore."
+            : "Aggiorna la CLI di Pipelean alla 2.4.0."}
+        </AlertDescription>
+      </Alert>
+    </DemoStack>
   );
 }
 
@@ -916,39 +1116,61 @@ function SpinnerDemo() {
    AI / Chat
    --------------------------------------------------------------------- */
 
+const ATTACHMENT_STATES = ["idle", "uploading", "processing", "error", "done"] as const;
+const ATTACHMENT_SIZES = ["default", "sm", "xs"] as const;
+const ATTACHMENT_ORIENTATIONS = ["horizontal", "vertical"] as const;
+
 function AttachmentDemo() {
+  const [state, setState] = React.useState<(typeof ATTACHMENT_STATES)[number]>("done");
+  const [size, setSize] = React.useState<(typeof ATTACHMENT_SIZES)[number]>("default");
+  const [orientation, setOrientation] = React.useState<(typeof ATTACHMENT_ORIENTATIONS)[number]>("horizontal");
   return (
-    <Attachment className="max-w-sm">
-      <AttachmentMedia>
-        <Paperclip />
-      </AttachmentMedia>
-      <AttachmentContent>
-        <AttachmentTitle>deploy-log.txt</AttachmentTitle>
-        <AttachmentDescription>12 KB</AttachmentDescription>
-      </AttachmentContent>
-      <AttachmentActions>
-        <Button size="icon-xs" variant="ghost" aria-label="Rimuovi">
-          <Plus className="rotate-45" />
-        </Button>
-      </AttachmentActions>
-    </Attachment>
+    <DemoStack>
+      <DemoControls>
+        <VariantSelect label="State" value={state} onValueChange={setState} options={ATTACHMENT_STATES} />
+        <VariantSelect label="Size" value={size} onValueChange={setSize} options={ATTACHMENT_SIZES} />
+        <VariantSelect label="Orientation" value={orientation} onValueChange={setOrientation} options={ATTACHMENT_ORIENTATIONS} />
+      </DemoControls>
+      <Attachment state={state} size={size} orientation={orientation} className="max-w-sm">
+        <AttachmentMedia>
+          <Paperclip />
+        </AttachmentMedia>
+        <AttachmentContent>
+          <AttachmentTitle>deploy-log.txt</AttachmentTitle>
+          <AttachmentDescription>
+            {state === "error" ? "Upload fallito" : "12 KB"}
+          </AttachmentDescription>
+        </AttachmentContent>
+        <AttachmentActions>
+          <Button size="icon-xs" variant="ghost" aria-label="Rimuovi">
+            <Plus className="rotate-45" />
+          </Button>
+        </AttachmentActions>
+      </Attachment>
+    </DemoStack>
   );
 }
 
+const BUBBLE_VARIANTS = ["default", "secondary", "muted", "tinted", "outline", "ghost", "destructive"] as const;
+const BUBBLE_ALIGNS = ["start", "end"] as const;
+
 function BubbleDemo() {
+  const [variant, setVariant] = React.useState<(typeof BUBBLE_VARIANTS)[number]>("default");
+  const [align, setAlign] = React.useState<(typeof BUBBLE_ALIGNS)[number]>("end");
   return (
-    <BubbleGroup className="max-w-sm">
-      <Bubble align="start">
-        <div data-slot="bubble-content" className="rounded-lg px-3 py-2 text-sm">
-          La pipeline è pronta per il deploy?
-        </div>
-      </Bubble>
-      <Bubble align="end">
-        <div data-slot="bubble-content" className="rounded-lg px-3 py-2 text-sm">
-          Sì, tutti i check sono verdi.
-        </div>
-      </Bubble>
-    </BubbleGroup>
+    <DemoStack>
+      <DemoControls>
+        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={BUBBLE_VARIANTS} />
+        <VariantSelect label="Align" value={align} onValueChange={setAlign} options={BUBBLE_ALIGNS} />
+      </DemoControls>
+      <BubbleGroup className="max-w-sm">
+        <Bubble variant={variant} align={align}>
+          <div data-slot="bubble-content" className="rounded-lg px-3 py-2 text-sm">
+            La pipeline è pronta per il deploy?
+          </div>
+        </Bubble>
+      </BubbleGroup>
+    </DemoStack>
   );
 }
 
