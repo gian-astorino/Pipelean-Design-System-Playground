@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { allEntries, getEntry } from "@/lib/components-catalog";
-import { readComponentSource } from "@/lib/read-component-source";
+import { readComponentSourceForTokens } from "@/lib/read-component-source";
 import { extractTokenMatches } from "@/lib/token-dictionary";
 import { getThemeVarPrimitives } from "@/lib/parse-theme-vars";
 import { ComponentDemo } from "@/components/catalog/component-demo";
@@ -19,7 +19,7 @@ export default async function ComponentPage({
   const entry = getEntry(slug);
   if (!entry) notFound();
 
-  const source = readComponentSource(entry.file);
+  const source = readComponentSourceForTokens(entry.slug, entry.file);
   const matches = extractTokenMatches(source);
   const primitives = getThemeVarPrimitives();
 

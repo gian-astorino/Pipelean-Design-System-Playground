@@ -68,11 +68,15 @@ const badgeSchema: VariantSchema = {
 };
 
 const alertSchema: VariantSchema = {
-  base: "relative grid w-full grid-cols-[0_1fr] items-start gap-y-0.5 rounded-lg border px-4 py-3 text-sm",
+  // Includes AlertTitle's and AlertDescription's own static classes
+  // (font-medium/tracking-tight, text-muted-foreground/leading-relaxed) —
+  // the demo always renders both alongside Alert itself.
+  base: "relative grid w-full grid-cols-[0_1fr] items-start gap-y-0.5 rounded-lg border px-4 py-3 text-sm font-medium tracking-tight text-muted-foreground leading-relaxed",
   dimensions: {
     variant: {
       default: "bg-card text-card-foreground",
-      destructive: "bg-card text-destructive",
+      // text-destructive/90 styles AlertDescription only in this variant
+      destructive: "bg-card text-destructive text-destructive/90",
     },
   },
   defaults: { variant: "default" },
@@ -97,7 +101,9 @@ const toggleSchema: VariantSchema = {
 };
 
 const markerSchema: VariantSchema = {
-  base: "group/marker relative flex min-h-4 w-full items-center gap-2 text-left text-sm text-muted-foreground",
+  // hover:text-foreground: styles a nested <a> on hover, from both
+  // Marker's own base and MarkerContent's static classes.
+  base: "group/marker relative flex min-h-4 w-full items-center gap-2 text-left text-sm text-muted-foreground hover:text-foreground",
   dimensions: {
     variant: {
       default: "",
@@ -110,7 +116,10 @@ const markerSchema: VariantSchema = {
 };
 
 const itemSchema: VariantSchema = {
-  base: "group/item flex flex-wrap items-center rounded-md border border-transparent text-sm transition-colors duration-100 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+  // hover:bg-accent/50 comes from Item's own base (styles it on hover
+  // when rendered as an <a> via asChild); the rest come from ItemTitle
+  // and ItemDescription's static classes, always rendered by the demo.
+  base: "group/item flex flex-wrap items-center rounded-md border border-transparent text-sm transition-colors duration-100 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 hover:bg-accent/50 font-medium leading-snug leading-normal font-normal text-muted-foreground text-primary",
   dimensions: {
     variant: {
       default: "bg-transparent",
@@ -127,10 +136,16 @@ const itemSchema: VariantSchema = {
 };
 
 const tabsSchema: VariantSchema = {
-  base: "group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground",
+  // Includes TabsTrigger's own static classes (always rendered by the
+  // demo alongside TabsList) — its colors/radius/ring aren't part of
+  // tabsListVariants at all, and most of them apply regardless of
+  // TabsList's variant (only the active-tab shadow differs by variant,
+  // handled per-option below).
+  base: "group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground rounded-md border border-transparent text-sm font-medium text-foreground/60 hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-ring dark:text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 after:bg-foreground",
   dimensions: {
     variant: {
-      default: "bg-muted",
+      // shadow-sm only styles the active trigger when TabsList is "default"
+      default: "bg-muted shadow-sm",
       line: "gap-1 bg-transparent",
     },
   },
@@ -139,7 +154,10 @@ const tabsSchema: VariantSchema = {
 };
 
 const bubbleSchema: VariantSchema = {
-  base: "group/bubble relative flex w-fit max-w-[80%] min-w-0 flex-col gap-1",
+  // Includes BubbleContent's own static classes (always rendered by
+  // the demo inside Bubble) — its radius/ring aren't part of
+  // bubbleVariants, which only styles color per variant.
+  base: "group/bubble relative flex w-fit max-w-[80%] min-w-0 flex-col gap-1 rounded-xl text-sm leading-relaxed focus-visible:border-ring focus-visible:ring-ring/50",
   dimensions: {
     variant: {
       default: "bg-primary text-primary-foreground hover:bg-primary/80",

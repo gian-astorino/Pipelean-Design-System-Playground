@@ -44,7 +44,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Bubble, BubbleGroup } from "@/components/ui/bubble";
+import { Bubble, BubbleContent, BubbleGroup } from "@/components/ui/bubble";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Calendar } from "@/components/ui/calendar";
@@ -1066,9 +1066,7 @@ function renderBubble(selection: Record<string, string>) {
         variant={selection.variant as (typeof BUBBLE_VARIANTS)[number]}
         align={selection.align as (typeof BUBBLE_ALIGNS)[number]}
       >
-        <div data-slot="bubble-content" className="rounded-lg px-3 py-2 text-sm">
-          La pipeline è pronta per il deploy?
-        </div>
+        <BubbleContent>La pipeline è pronta per il deploy?</BubbleContent>
       </Bubble>
     </BubbleGroup>
   );

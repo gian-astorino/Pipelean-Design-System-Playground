@@ -115,7 +115,12 @@ function buildRegexes() {
   const prefixAlt = COLOR_PREFIXES.join("|");
   return {
     color: new RegExp(`\\b(?:${prefixAlt})-(?:${colorAlt})(?:/\\d{1,3})?\\b`, "g"),
-    radius: new RegExp(`\\brounded(?:-(?:${RADIUS_NAMES.join("|")}))?\\b`, "g"),
+    // (?!-) rejects "rounded-none" and directional/logical-corner classes
+    // (rounded-l-md, rounded-tl-lg, ...): without it, the optional suffix
+    // group simply fails to match "-l-md" and falls back to a bare
+    // "rounded" match, misreporting a corner-specific or no-op radius as
+    // the default scale value.
+    radius: new RegExp(`\\brounded(?:-(?:${RADIUS_NAMES.join("|")}))?\\b(?!-)`, "g"),
     shadow: new RegExp(`\\bshadow-(?:${SHADOW_NAMES.join("|")})\\b`, "g"),
     fontSize: new RegExp(`\\btext-(?:${FONT_SIZE_NAMES.join("|")})\\b`, "g"),
     fontWeight: new RegExp(`\\bfont-(?:${FONT_WEIGHT_NAMES.join("|")})\\b`, "g"),
