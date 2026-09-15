@@ -70,9 +70,42 @@ export type TokenMatch = {
   className: string;
   category: TokenCategory;
   cssVar: string;
+  /** Which visual part of the component this class controls (sfondo,
+   *  bordo, testo, ...), in Italian to match the rest of the UI. */
+  part: string;
 };
 
 const COLOR_PREFIXES = ["bg", "text", "border", "ring", "outline", "decoration", "divide", "placeholder", "caret", "fill", "stroke"];
+
+/** Human label for each color-utility prefix — "which part" a bg-*,
+ *  text-*, border-*, ... class is painting. */
+const COLOR_PREFIX_PARTS: Record<string, string> = {
+  bg: "Sfondo",
+  text: "Testo",
+  border: "Bordo",
+  ring: "Anello di focus",
+  outline: "Contorno",
+  decoration: "Decorazione testo",
+  divide: "Separatore tra elementi",
+  placeholder: "Testo placeholder",
+  caret: "Cursore di testo",
+  fill: "Icona (fill)",
+  stroke: "Icona (stroke)",
+};
+
+function partForColorClass(className: string): string {
+  const prefix = className.split("-")[0];
+  return COLOR_PREFIX_PARTS[prefix] ?? prefix;
+}
+
+const PART_LABELS: Record<Exclude<TokenCategory, "color">, string> = {
+  radius: "Raggio degli angoli",
+  shadow: "Ombra",
+  "font-size": "Dimensione testo",
+  "font-weight": "Peso testo",
+  tracking: "Spaziatura lettere",
+  leading: "Interlinea",
+};
 
 function buildRegexes() {
   // Longest-first: regex alternation takes the first alternative that
@@ -105,31 +138,31 @@ function cssVarForColorClass(className: string): string {
 export function extractTokenMatches(source: string): TokenMatch[] {
   const seen = new Map<string, TokenMatch>();
 
-  const add = (className: string, category: TokenCategory, cssVar: string) => {
-    if (!seen.has(className)) seen.set(className, { className, category, cssVar });
+  const add = (className: string, category: TokenCategory, cssVar: string, part: string) => {
+    if (!seen.has(className)) seen.set(className, { className, category, cssVar, part });
   };
 
   for (const m of source.match(REGEXES.color) ?? []) {
-    add(m, "color", cssVarForColorClass(m));
+    add(m, "color", cssVarForColorClass(m), partForColorClass(m));
   }
   for (const m of source.match(REGEXES.radius) ?? []) {
     const suffix = m.includes("-") ? m.split("-").slice(1).join("-") : "sm";
-    add(m, "radius", `--radius-${suffix}`);
+    add(m, "radius", `--radius-${suffix}`, PART_LABELS.radius);
   }
   for (const m of source.match(REGEXES.shadow) ?? []) {
-    add(m, "shadow", `--shadow-${m.split("-").slice(1).join("-")}`);
+    add(m, "shadow", `--shadow-${m.split("-").slice(1).join("-")}`, PART_LABELS.shadow);
   }
   for (const m of source.match(REGEXES.fontSize) ?? []) {
-    add(m, "font-size", `--text-${m.split("-").slice(1).join("-")}`);
+    add(m, "font-size", `--text-${m.split("-").slice(1).join("-")}`, PART_LABELS["font-size"]);
   }
   for (const m of source.match(REGEXES.fontWeight) ?? []) {
-    add(m, "font-weight", `--font-weight-${m.split("-").slice(1).join("-")}`);
+    add(m, "font-weight", `--font-weight-${m.split("-").slice(1).join("-")}`, PART_LABELS["font-weight"]);
   }
   for (const m of source.match(REGEXES.tracking) ?? []) {
-    add(m, "tracking", `--tracking-${m.split("-").slice(1).join("-")}`);
+    add(m, "tracking", `--tracking-${m.split("-").slice(1).join("-")}`, PART_LABELS.tracking);
   }
   for (const m of source.match(REGEXES.leading) ?? []) {
-    add(m, "leading", `--leading-${m.split("-").slice(1).join("-")}`);
+    add(m, "leading", `--leading-${m.split("-").slice(1).join("-")}`, PART_LABELS.leading);
   }
 
   return [...seen.values()].sort((a, b) =>
