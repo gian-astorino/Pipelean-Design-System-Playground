@@ -1,11 +1,34 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-import { baseTokenGroups, semanticGroups } from "@/lib/design-tokens";
+import {
+  baseTokenGroups,
+  semanticGroups,
+  spacingScale,
+  radiusScale,
+  shadowScale,
+  fontSizeScale,
+  fontWeightScale,
+  trackingScale,
+  leadingScale,
+  componentTokenMaps,
+} from "@/lib/design-tokens";
 import { BaseSwatch, SemanticSwatch } from "@/components/token-swatch";
+import { ScaleTable } from "@/components/scale-table";
+import { ComponentTokenTable } from "@/components/component-token-table";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+
+const sections = [
+  { href: "#base", label: "1. Base" },
+  { href: "#semantici", label: "2. Semantici" },
+  { href: "#spacing", label: "3. Spacing" },
+  { href: "#radius", label: "4. Radius" },
+  { href: "#ombre", label: "5. Ombre" },
+  { href: "#tipografia", label: "6. Tipografia" },
+  { href: "#componenti", label: "7. Componenti" },
+];
 
 export default function TokensPage() {
   return (
@@ -33,7 +56,15 @@ export default function TokensPage() {
         <ThemeToggle />
       </header>
 
-      <section className="flex flex-col gap-6">
+      <nav className="flex flex-wrap gap-x-4 gap-y-1 border-y border-border py-2 text-sm text-muted-foreground">
+        {sections.map((s) => (
+          <a key={s.href} href={s.href} className="hover:text-foreground">
+            {s.label}
+          </a>
+        ))}
+      </nav>
+
+      <section id="base" className="flex scroll-mt-6 flex-col gap-6">
         <div>
           <h2 className="text-lg font-semibold">1. Token base (primitive)</h2>
           <p className="text-sm text-muted-foreground">
@@ -60,7 +91,7 @@ export default function TokensPage() {
 
       <Separator />
 
-      <section className="flex flex-col gap-6">
+      <section id="semantici" className="flex scroll-mt-6 flex-col gap-6">
         <div>
           <h2 className="text-lg font-semibold">2. Token semantici (ruoli)</h2>
           <p className="text-sm text-muted-foreground">
@@ -78,6 +109,113 @@ export default function TokensPage() {
             </div>
           </div>
         ))}
+      </section>
+
+      <Separator />
+
+      <section id="spacing" className="flex scroll-mt-6 flex-col gap-6">
+        <div>
+          <h2 className="text-lg font-semibold">3. Spacing &amp; sizing</h2>
+          <p className="text-sm text-muted-foreground">
+            Nessuna variabile per singolo step: ogni utility <code>p-*</code>,{" "}
+            <code>size-*</code>, <code>gap-*</code> calcola{" "}
+            <code>n × var(--spacing)</code> al volo. Cambiare il primitivo{" "}
+            <code>--spacing</code> in <code>globals.css</code> risca­la tutto
+            il sistema in un colpo solo.
+          </p>
+        </div>
+        <ScaleTable
+          title="Spacing scale"
+          description="Misurata su un elemento reale con classe size-<n>: la larghezza è il valore risolto di n × --spacing."
+          rows={spacingScale}
+        />
+      </section>
+
+      <Separator />
+
+      <section id="radius" className="flex scroll-mt-6 flex-col gap-6">
+        <div>
+          <h2 className="text-lg font-semibold">4. Radius</h2>
+          <p className="text-sm text-muted-foreground">
+            Pipelean sovrascrive <code>sm/md/lg/xl</code> per derivarli dal
+            primitivo <code>--radius</code> (vedi{" "}
+            <code>@theme inline</code> in globals.css); <code>xs/2xl/3xl/4xl</code>{" "}
+            restano gli originali di Tailwind.
+          </p>
+        </div>
+        <ScaleTable
+          title="Radius scale"
+          description="border-radius risolto su un box reale con la classe rounded-<nome>."
+          rows={radiusScale}
+        />
+      </section>
+
+      <Separator />
+
+      <section id="ombre" className="flex scroll-mt-6 flex-col gap-6">
+        <div>
+          <h2 className="text-lg font-semibold">5. Ombre</h2>
+          <p className="text-sm text-muted-foreground">
+            Scala di default di Tailwind v4 (nessuna sovrascrittura Pipelean
+            per ora). <code>Card</code> usa <code>shadow-sm</code>,{" "}
+            <code>Input</code> usa <code>shadow-xs</code>.
+          </p>
+        </div>
+        <ScaleTable
+          title="Shadow scale"
+          description="box-shadow risolto su un box reale con la classe shadow-<nome>."
+          rows={shadowScale}
+        />
+      </section>
+
+      <Separator />
+
+      <section id="tipografia" className="flex scroll-mt-6 flex-col gap-6">
+        <div>
+          <h2 className="text-lg font-semibold">6. Tipografia</h2>
+          <p className="text-sm text-muted-foreground">
+            Dimensione, peso, tracking e line-height: le quattro scale che
+            insieme definiscono lo stile del testo in tutta l&apos;app.
+          </p>
+        </div>
+        <ScaleTable
+          title="Font size"
+          description="font-size (+ line-height abbinata) risolto con la classe text-<nome>."
+          rows={fontSizeScale}
+        />
+        <ScaleTable
+          title="Font weight"
+          description="font-weight risolto con la classe font-<nome>."
+          rows={fontWeightScale}
+        />
+        <ScaleTable
+          title="Letter spacing (tracking)"
+          description="letter-spacing risolto con la classe tracking-<nome>."
+          rows={trackingScale}
+        />
+        <ScaleTable
+          title="Line height (leading)"
+          description="line-height risolto con la classe leading-<nome>."
+          rows={leadingScale}
+        />
+      </section>
+
+      <Separator />
+
+      <section id="componenti" className="flex scroll-mt-6 flex-col gap-6">
+        <div>
+          <h2 className="text-lg font-semibold">7. Token dei componenti</h2>
+          <p className="text-sm text-muted-foreground">
+            Per ogni componente shadcn/ui in <code>src/components/ui</code>,
+            quali token semantici e di scala determinano ciascuna sua parte
+            visiva.
+          </p>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          {componentTokenMaps.map((map) => (
+            <ComponentTokenTable key={map.component} map={map} />
+          ))}
+        </div>
       </section>
     </div>
   );
