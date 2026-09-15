@@ -60,6 +60,32 @@ export const baseTokenGroups: BaseTokenGroup[] = [
     cssVar: "--color-blue",
     steps: ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"],
   },
+  ...(
+    [
+      ["Orange", "--color-orange"],
+      ["Yellow", "--color-yellow"],
+      ["Lime", "--color-lime"],
+      ["Emerald", "--color-emerald"],
+      ["Teal", "--color-teal"],
+      ["Cyan", "--color-cyan"],
+      ["Sky", "--color-sky"],
+      ["Indigo", "--color-indigo"],
+      ["Violet", "--color-violet"],
+      ["Purple", "--color-purple"],
+      ["Fuchsia", "--color-fuchsia"],
+      ["Pink", "--color-pink"],
+      ["Rose", "--color-rose"],
+      ["Slate", "--color-slate"],
+      ["Gray", "--color-gray"],
+      ["Zinc", "--color-zinc"],
+      ["Stone", "--color-stone"],
+    ] as const
+  ).map(([name, cssVar]) => ({
+    name,
+    description: "Tailwind built-in — non usato da nessun ruolo semantico Pipelean per ora.",
+    cssVar,
+    steps: ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"],
+  })),
 ];
 
 /**
@@ -74,7 +100,6 @@ export const semanticGroups: SemanticGroup[] = [
       { name: "background", cssVar: "--background", foregroundVar: "--foreground", mapsTo: "white / neutral-950", description: "Page canvas." },
       { name: "card", cssVar: "--card", foregroundVar: "--card-foreground", mapsTo: "white / neutral-900", description: "Raised container surface." },
       { name: "popover", cssVar: "--popover", foregroundVar: "--popover-foreground", mapsTo: "white / neutral-900", description: "Floating surface (menus, popovers)." },
-      { name: "sidebar", cssVar: "--sidebar", foregroundVar: "--sidebar-foreground", mapsTo: "neutral-50 / neutral-900", description: "App shell / navigation surface." },
     ],
   },
   {
@@ -101,6 +126,16 @@ export const semanticGroups: SemanticGroup[] = [
       { name: "border", cssVar: "--border", mapsTo: "neutral-200 / neutral-800", description: "Default border color." },
       { name: "input", cssVar: "--input", mapsTo: "neutral-200 / neutral-800", description: "Form control border." },
       { name: "ring", cssVar: "--ring", mapsTo: "brand-500 / brand-400", description: "Focus ring color." },
+    ],
+  },
+  {
+    category: "Sidebar",
+    tokens: [
+      { name: "sidebar", cssVar: "--sidebar", foregroundVar: "--sidebar-foreground", mapsTo: "neutral-50 / neutral-900", description: "App shell / navigation surface." },
+      { name: "sidebar-primary", cssVar: "--sidebar-primary", foregroundVar: "--sidebar-primary-foreground", mapsTo: "brand-600 / brand-400", description: "Active/selected nav item." },
+      { name: "sidebar-accent", cssVar: "--sidebar-accent", foregroundVar: "--sidebar-accent-foreground", mapsTo: "neutral-100 / neutral-800", description: "Hover state on nav items." },
+      { name: "sidebar-border", cssVar: "--sidebar-border", mapsTo: "neutral-200 / neutral-800", description: "Divider between sidebar and content." },
+      { name: "sidebar-ring", cssVar: "--sidebar-ring", mapsTo: "brand-500 / brand-400", description: "Focus ring inside the sidebar." },
     ],
   },
   {

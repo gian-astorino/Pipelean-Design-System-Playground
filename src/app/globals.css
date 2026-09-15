@@ -9,7 +9,7 @@
  * variables directly (`var(--color-red-100)`), which the scanner can't
  * see, so force-generate the full base ramps it needs to display.
  */
-@source inline("bg-{neutral,red,green,amber,blue}-{50,100,200,300,400,500,600,700,800,900,950}");
+@source inline("bg-{neutral,red,green,amber,blue,orange,yellow,lime,emerald,teal,cyan,sky,indigo,violet,purple,fuchsia,pink,rose,slate,gray,zinc,stone}-{50,100,200,300,400,500,600,700,800,900,950}");
 
 /* =====================================================================
    PIPELEAN DESIGN SYSTEM — DESIGN TOKENS

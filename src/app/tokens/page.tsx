@@ -13,7 +13,7 @@ import {
   leadingScale,
   componentTokenMaps,
 } from "@/lib/design-tokens";
-import { BaseSwatch, SemanticSwatch } from "@/components/token-swatch";
+import { BaseColorTable, SemanticColorTable, ColorProbes } from "@/components/color-token-table";
 import { ScaleTable } from "@/components/scale-table";
 import { ComponentTokenTable } from "@/components/component-token-table";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -33,6 +33,7 @@ const sections = [
 export default function TokensPage() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-10 px-6 py-10">
+      <ColorProbes />
       <header className="flex items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <Button asChild variant="ghost" size="sm" className="w-fit -ml-2">
@@ -73,19 +74,7 @@ export default function TokensPage() {
           </p>
         </div>
         {baseTokenGroups.map((group) => (
-          <div key={group.name} className="flex flex-col gap-2">
-            <div className="flex items-baseline gap-2">
-              <h3 className="font-medium">{group.name}</h3>
-              <span className="text-xs text-muted-foreground">
-                {group.description}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11">
-              {group.steps.map((step) => (
-                <BaseSwatch key={step} cssVar={group.cssVar} step={step} />
-              ))}
-            </div>
-          </div>
+          <BaseColorTable key={group.name} group={group} />
         ))}
       </section>
 
@@ -100,14 +89,7 @@ export default function TokensPage() {
           </p>
         </div>
         {semanticGroups.map((group) => (
-          <div key={group.category} className="flex flex-col gap-3">
-            <h3 className="font-medium">{group.category}</h3>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {group.tokens.map((token) => (
-                <SemanticSwatch key={token.name} {...token} />
-              ))}
-            </div>
-          </div>
+          <SemanticColorTable key={group.category} category={group.category} tokens={group.tokens} />
         ))}
       </section>
 
