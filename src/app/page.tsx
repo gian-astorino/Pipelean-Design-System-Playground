@@ -56,13 +56,7 @@ export default function Home() {
             </Link>
           </Button>
           <Button asChild variant="outline">
-            <a
-              href="https://ui.shadcn.com/docs/components"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Catalogo componenti shadcn
-            </a>
+            <Link href="/components/button/">Libreria componenti</Link>
           </Button>
         </div>
       </section>
