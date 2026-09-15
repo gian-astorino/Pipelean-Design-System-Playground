@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { allEntries, getEntry } from "@/lib/components-catalog";
 import { readComponentSource } from "@/lib/read-component-source";
 import { extractTokenMatches } from "@/lib/token-dictionary";
-import { AutoTokenTable } from "@/components/catalog/auto-token-table";
-import { ComponentDemo } from "@/components/catalog/demos";
+import { getThemeVarPrimitives } from "@/lib/parse-theme-vars";
+import { ComponentDemo } from "@/components/catalog/component-demo";
 
 export function generateStaticParams() {
   return allEntries.map((e) => ({ slug: e.slug }));
@@ -21,6 +21,7 @@ export default async function ComponentPage({
 
   const source = readComponentSource(entry.file);
   const matches = extractTokenMatches(source);
+  const primitives = getThemeVarPrimitives();
 
   return (
     <div className="flex flex-col gap-8">
@@ -29,17 +30,7 @@ export default async function ComponentPage({
         <code className="text-xs text-muted-foreground">src/components/ui/{entry.file}</code>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <h3 className="text-sm font-medium text-muted-foreground">Demo</h3>
-        <div className="flex min-h-32 items-center justify-center rounded-lg border border-border p-8">
-          <ComponentDemo slug={entry.slug} />
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <h3 className="text-sm font-medium text-muted-foreground">Token collegati</h3>
-        <AutoTokenTable matches={matches} file={entry.file} />
-      </div>
+      <ComponentDemo slug={entry.slug} file={entry.file} matches={matches} primitives={primitives} />
     </div>
   );
 }

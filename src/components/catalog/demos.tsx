@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
+import { DemoControls, DemoStack, ErrorToggle, VariantSelect } from "@/components/catalog/demo-controls";
+
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -112,60 +114,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-
-/* ---------------------------------------------------------------------
-   Demo controls — shared dropdown/toggle used by every demo below that
-   has more than one variant, size or error state.
-   --------------------------------------------------------------------- */
-
-function VariantSelect<T extends string>({
-  label,
-  value,
-  onValueChange,
-  options,
-}: {
-  label: string;
-  value: T;
-  onValueChange: (value: T) => void;
-  options: readonly T[];
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
-      <Select value={value} onValueChange={(v) => onValueChange(v as T)}>
-        <SelectTrigger size="sm" className="w-36">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map((o) => (
-            <SelectItem key={o} value={o}>
-              {o}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-}
-
-function ErrorToggle({ checked, onCheckedChange }: { checked: boolean; onCheckedChange: (v: boolean) => void }) {
-  return (
-    <div className="flex items-center gap-2">
-      <Switch id="error-toggle" checked={checked} onCheckedChange={onCheckedChange} />
-      <Label htmlFor="error-toggle" className="text-xs text-muted-foreground">
-        Stato di errore
-      </Label>
-    </div>
-  );
-}
-
-function DemoStack({ children }: { children: React.ReactNode }) {
-  return <div className="flex flex-col items-center gap-4">{children}</div>;
-}
-
-function DemoControls({ children }: { children: React.ReactNode }) {
-  return <div className="flex flex-wrap items-center justify-center gap-4">{children}</div>;
-}
 
 /* ---------------------------------------------------------------------
    Layout
@@ -360,26 +308,20 @@ function PaginationDemo() {
 
 const TABS_VARIANTS = ["default", "line"] as const;
 
-function TabsDemo() {
-  const [variant, setVariant] = React.useState<(typeof TABS_VARIANTS)[number]>("default");
+function renderTabs(selection: Record<string, string>) {
   return (
-    <DemoStack>
-      <DemoControls>
-        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={TABS_VARIANTS} />
-      </DemoControls>
-      <Tabs defaultValue="overview" className="w-72">
-        <TabsList variant={variant}>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="logs">Log</TabsTrigger>
-        </TabsList>
-        <TabsContent value="overview" className="text-sm text-muted-foreground">
-          Stato attuale della pipeline.
-        </TabsContent>
-        <TabsContent value="logs" className="text-sm text-muted-foreground">
-          Ultime righe di log del run.
-        </TabsContent>
-      </Tabs>
-    </DemoStack>
+    <Tabs defaultValue="overview" className="w-72">
+      <TabsList variant={selection.variant as "default" | "line"}>
+        <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsTrigger value="logs">Log</TabsTrigger>
+      </TabsList>
+      <TabsContent value="overview" className="text-sm text-muted-foreground">
+        Stato attuale della pipeline.
+      </TabsContent>
+      <TabsContent value="logs" className="text-sm text-muted-foreground">
+        Ultime righe di log del run.
+      </TabsContent>
+    </Tabs>
   );
 }
 
@@ -390,21 +332,16 @@ function TabsDemo() {
 const BUTTON_VARIANTS = ["default", "secondary", "outline", "destructive", "ghost", "link"] as const;
 const BUTTON_SIZES = ["default", "xs", "sm", "lg", "icon", "icon-xs", "icon-sm", "icon-lg"] as const;
 
-function ButtonDemo() {
-  const [variant, setVariant] = React.useState<(typeof BUTTON_VARIANTS)[number]>("default");
-  const [size, setSize] = React.useState<(typeof BUTTON_SIZES)[number]>("default");
-  const isIcon = size.startsWith("icon");
-
+function renderButton(selection: Record<string, string>) {
+  const isIcon = selection.size.startsWith("icon");
   return (
-    <DemoStack>
-      <DemoControls>
-        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={BUTTON_VARIANTS} />
-        <VariantSelect label="Size" value={size} onValueChange={setSize} options={BUTTON_SIZES} />
-      </DemoControls>
-      <Button variant={variant} size={size} aria-label="Continua">
-        {isIcon ? <ChevronRight /> : "Continua"}
-      </Button>
-    </DemoStack>
+    <Button
+      variant={selection.variant as (typeof BUTTON_VARIANTS)[number]}
+      size={selection.size as (typeof BUTTON_SIZES)[number]}
+      aria-label="Continua"
+    >
+      {isIcon ? <ChevronRight /> : "Continua"}
+    </Button>
   );
 }
 
@@ -626,43 +563,36 @@ function TextareaDemo() {
 const TOGGLE_VARIANTS = ["default", "outline"] as const;
 const TOGGLE_SIZES = ["default", "sm", "lg"] as const;
 
-function ToggleDemo() {
-  const [variant, setVariant] = React.useState<(typeof TOGGLE_VARIANTS)[number]>("default");
-  const [size, setSize] = React.useState<(typeof TOGGLE_SIZES)[number]>("default");
+function renderToggle(selection: Record<string, string>) {
   return (
-    <DemoStack>
-      <DemoControls>
-        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={TOGGLE_VARIANTS} />
-        <VariantSelect label="Size" value={size} onValueChange={setSize} options={TOGGLE_SIZES} />
-      </DemoControls>
-      <Toggle variant={variant} size={size} aria-label="Grassetto">
-        <Bold />
-      </Toggle>
-    </DemoStack>
+    <Toggle
+      variant={selection.variant as (typeof TOGGLE_VARIANTS)[number]}
+      size={selection.size as (typeof TOGGLE_SIZES)[number]}
+      aria-label="Grassetto"
+    >
+      <Bold />
+    </Toggle>
   );
 }
 
-function ToggleGroupDemo() {
-  const [variant, setVariant] = React.useState<(typeof TOGGLE_VARIANTS)[number]>("default");
-  const [size, setSize] = React.useState<(typeof TOGGLE_SIZES)[number]>("default");
+function renderToggleGroup(selection: Record<string, string>) {
   return (
-    <DemoStack>
-      <DemoControls>
-        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={TOGGLE_VARIANTS} />
-        <VariantSelect label="Size" value={size} onValueChange={setSize} options={TOGGLE_SIZES} />
-      </DemoControls>
-      <ToggleGroup type="single" defaultValue="bold" variant={variant} size={size}>
-        <ToggleGroupItem value="bold" aria-label="Grassetto">
-          <Bold />
-        </ToggleGroupItem>
-        <ToggleGroupItem value="italic" aria-label="Corsivo">
-          <Italic />
-        </ToggleGroupItem>
-        <ToggleGroupItem value="underline" aria-label="Sottolineato">
-          <UnderlineIcon />
-        </ToggleGroupItem>
-      </ToggleGroup>
-    </DemoStack>
+    <ToggleGroup
+      type="single"
+      defaultValue="bold"
+      variant={selection.variant as (typeof TOGGLE_VARIANTS)[number]}
+      size={selection.size as (typeof TOGGLE_SIZES)[number]}
+    >
+      <ToggleGroupItem value="bold" aria-label="Grassetto">
+        <Bold />
+      </ToggleGroupItem>
+      <ToggleGroupItem value="italic" aria-label="Corsivo">
+        <Italic />
+      </ToggleGroupItem>
+      <ToggleGroupItem value="underline" aria-label="Sottolineato">
+        <UnderlineIcon />
+      </ToggleGroupItem>
+    </ToggleGroup>
   );
 }
 
@@ -862,16 +792,8 @@ function AvatarDemo() {
 
 const BADGE_VARIANTS = ["default", "secondary", "outline", "destructive", "ghost", "link"] as const;
 
-function BadgeDemo() {
-  const [variant, setVariant] = React.useState<(typeof BADGE_VARIANTS)[number]>("default");
-  return (
-    <DemoStack>
-      <DemoControls>
-        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={BADGE_VARIANTS} />
-      </DemoControls>
-      <Badge variant={variant}>Badge</Badge>
-    </DemoStack>
-  );
+function renderBadge(selection: Record<string, string>) {
+  return <Badge variant={selection.variant as (typeof BADGE_VARIANTS)[number]}>Badge</Badge>;
 }
 
 function CalendarDemo() {
@@ -970,32 +892,27 @@ function EmptyDemo() {
 const ITEM_VARIANTS = ["default", "outline", "muted"] as const;
 const ITEM_SIZES = ["default", "sm"] as const;
 
-function ItemDemo() {
-  const [variant, setVariant] = React.useState<(typeof ITEM_VARIANTS)[number]>("outline");
-  const [size, setSize] = React.useState<(typeof ITEM_SIZES)[number]>("default");
+function renderItem(selection: Record<string, string>) {
   return (
-    <DemoStack>
-      <DemoControls>
-        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={ITEM_VARIANTS} />
-        <VariantSelect label="Size" value={size} onValueChange={setSize} options={ITEM_SIZES} />
-      </DemoControls>
-      <ItemGroup className="max-w-md gap-2">
-        <Item variant={variant} size={size}>
-          <ItemMedia>
-            <FileText className="size-4" />
-          </ItemMedia>
-          <ItemContent>
-            <ItemTitle>deploy.yml</ItemTitle>
-            <ItemDescription>Aggiornato 2h fa</ItemDescription>
-          </ItemContent>
-          <ItemActions>
-            <Button size="sm" variant="ghost">
-              Apri
-            </Button>
-          </ItemActions>
-        </Item>
-      </ItemGroup>
-    </DemoStack>
+    <ItemGroup className="max-w-md gap-2">
+      <Item
+        variant={selection.variant as (typeof ITEM_VARIANTS)[number]}
+        size={selection.size as (typeof ITEM_SIZES)[number]}
+      >
+        <ItemMedia>
+          <FileText className="size-4" />
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle>deploy.yml</ItemTitle>
+          <ItemDescription>Aggiornato 2h fa</ItemDescription>
+        </ItemContent>
+        <ItemActions>
+          <Button size="sm" variant="ghost">
+            Apri
+          </Button>
+        </ItemActions>
+      </Item>
+    </ItemGroup>
   );
 }
 
@@ -1010,28 +927,23 @@ function KbdDemo() {
 
 const MARKER_VARIANTS = ["default", "separator", "border"] as const;
 
-function MarkerDemo() {
-  const [variant, setVariant] = React.useState<(typeof MARKER_VARIANTS)[number]>("default");
+function renderMarker(selection: Record<string, string>) {
+  const variant = selection.variant as (typeof MARKER_VARIANTS)[number];
   return (
-    <DemoStack>
-      <DemoControls>
-        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={MARKER_VARIANTS} />
-      </DemoControls>
-      <div className="flex w-64 flex-col gap-1">
-        <Marker variant={variant}>
-          <MarkerIcon>
-            <ChevronRight className="size-4" />
-          </MarkerIcon>
-          <MarkerContent>Build completata</MarkerContent>
-        </Marker>
-        <Marker variant={variant}>
-          <MarkerIcon>
-            <ChevronRight className="size-4" />
-          </MarkerIcon>
-          <MarkerContent>Deploy in corso</MarkerContent>
-        </Marker>
-      </div>
-    </DemoStack>
+    <div className="flex w-64 flex-col gap-1">
+      <Marker variant={variant}>
+        <MarkerIcon>
+          <ChevronRight className="size-4" />
+        </MarkerIcon>
+        <MarkerContent>Build completata</MarkerContent>
+      </Marker>
+      <Marker variant={variant}>
+        <MarkerIcon>
+          <ChevronRight className="size-4" />
+        </MarkerIcon>
+        <MarkerContent>Deploy in corso</MarkerContent>
+      </Marker>
+    </div>
   );
 }
 
@@ -1069,25 +981,18 @@ function TableDemo() {
 
 const ALERT_VARIANTS = ["default", "destructive"] as const;
 
-function AlertDemo() {
-  const [variant, setVariant] = React.useState<(typeof ALERT_VARIANTS)[number]>("default");
+function renderAlert(selection: Record<string, string>) {
+  const variant = selection.variant as (typeof ALERT_VARIANTS)[number];
   return (
-    <DemoStack>
-      <DemoControls>
-        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={ALERT_VARIANTS} />
-      </DemoControls>
-      <Alert variant={variant} className="max-w-md">
-        {variant === "destructive" ? <TriangleAlert /> : <Info />}
-        <AlertTitle>
-          {variant === "destructive" ? "Run fallito" : "Nuova versione disponibile"}
-        </AlertTitle>
-        <AlertDescription>
-          {variant === "destructive"
-            ? "Lo step di deploy è terminato con errore."
-            : "Aggiorna la CLI di Pipelean alla 2.4.0."}
-        </AlertDescription>
-      </Alert>
-    </DemoStack>
+    <Alert variant={variant} className="max-w-md">
+      {variant === "destructive" ? <TriangleAlert /> : <Info />}
+      <AlertTitle>{variant === "destructive" ? "Run fallito" : "Nuova versione disponibile"}</AlertTitle>
+      <AlertDescription>
+        {variant === "destructive"
+          ? "Lo step di deploy è terminato con errore."
+          : "Aggiorna la CLI di Pipelean alla 2.4.0."}
+      </AlertDescription>
+    </Alert>
   );
 }
 
@@ -1154,23 +1059,18 @@ function AttachmentDemo() {
 const BUBBLE_VARIANTS = ["default", "secondary", "muted", "tinted", "outline", "ghost", "destructive"] as const;
 const BUBBLE_ALIGNS = ["start", "end"] as const;
 
-function BubbleDemo() {
-  const [variant, setVariant] = React.useState<(typeof BUBBLE_VARIANTS)[number]>("default");
-  const [align, setAlign] = React.useState<(typeof BUBBLE_ALIGNS)[number]>("end");
+function renderBubble(selection: Record<string, string>) {
   return (
-    <DemoStack>
-      <DemoControls>
-        <VariantSelect label="Variant" value={variant} onValueChange={setVariant} options={BUBBLE_VARIANTS} />
-        <VariantSelect label="Align" value={align} onValueChange={setAlign} options={BUBBLE_ALIGNS} />
-      </DemoControls>
-      <BubbleGroup className="max-w-sm">
-        <Bubble variant={variant} align={align}>
-          <div data-slot="bubble-content" className="rounded-lg px-3 py-2 text-sm">
-            La pipeline è pronta per il deploy?
-          </div>
-        </Bubble>
-      </BubbleGroup>
-    </DemoStack>
+    <BubbleGroup className="max-w-sm">
+      <Bubble
+        variant={selection.variant as (typeof BUBBLE_VARIANTS)[number]}
+        align={selection.align as (typeof BUBBLE_ALIGNS)[number]}
+      >
+        <div data-slot="bubble-content" className="rounded-lg px-3 py-2 text-sm">
+          La pipeline è pronta per il deploy?
+        </div>
+      </Bubble>
+    </BubbleGroup>
   );
 }
 
@@ -1240,7 +1140,13 @@ function DirectionDemo() {
   );
 }
 
-const demoRegistry: Record<string, React.ComponentType> = {
+/** Demos for components with no variant/size that changes their token
+ *  set — the token table for these just scans the whole file. Consumed
+ *  from a client component (component-demo.tsx), never indexed from a
+ *  Server Component (a Server Component can only cross the client
+ *  boundary through JSX composition, not by reading a plain object
+ *  exported from a "use client" module). */
+export const demoRegistry: Record<string, React.ComponentType> = {
   "aspect-ratio": AspectRatioDemo,
   resizable: ResizableDemo,
   "scroll-area": ScrollAreaDemo,
@@ -1251,8 +1157,6 @@ const demoRegistry: Record<string, React.ComponentType> = {
   menubar: MenubarDemo,
   "navigation-menu": NavigationMenuDemo,
   pagination: PaginationDemo,
-  tabs: TabsDemo,
-  button: ButtonDemo,
   "button-group": ButtonGroupDemo,
   checkbox: CheckboxDemo,
   combobox: ComboboxDemo,
@@ -1267,8 +1171,6 @@ const demoRegistry: Record<string, React.ComponentType> = {
   slider: SliderDemo,
   switch: SwitchDemo,
   textarea: TextareaDemo,
-  toggle: ToggleDemo,
-  "toggle-group": ToggleGroupDemo,
   "alert-dialog": AlertDialogDemo,
   "context-menu": ContextMenuDemo,
   dialog: DialogDemo,
@@ -1280,37 +1182,36 @@ const demoRegistry: Record<string, React.ComponentType> = {
   tooltip: TooltipDemo,
   accordion: AccordionDemo,
   avatar: AvatarDemo,
-  badge: BadgeDemo,
   calendar: CalendarDemo,
   card: CardDemo,
   carousel: CarouselDemo,
   chart: ChartDemo,
   collapsible: CollapsibleDemo,
   empty: EmptyDemo,
-  item: ItemDemo,
   kbd: KbdDemo,
-  marker: MarkerDemo,
   table: TableDemo,
-  alert: AlertDemo,
   progress: ProgressDemo,
   sonner: SonnerDemo,
   spinner: SpinnerDemo,
   attachment: AttachmentDemo,
-  bubble: BubbleDemo,
   message: MessageDemo,
   "message-scroller": MessageScrollerDemo,
   command: CommandDemo,
   direction: DirectionDemo,
 };
 
-/** Looks up and renders a demo by slug — the lookup happens inside this
- *  client component (not in the server page) because a Server Component
- *  can only cross the client boundary through JSX composition, not by
- *  indexing into a plain object exported from a "use client" module. */
-export function ComponentDemo({ slug }: { slug: string }) {
-  const Demo = demoRegistry[slug];
-  if (!Demo) {
-    return <p className="text-sm text-muted-foreground">Demo non disponibile.</p>;
-  }
-  return <Demo />;
-}
+/** Demos for components listed in component-variant-schemas.ts — pure
+ *  functions of the current dropdown selection, rendered (and given
+ *  their controls + filtered token table) by VariantShowcase in
+ *  component-demo.tsx. */
+export const variantRenderers: Record<string, (selection: Record<string, string>) => React.ReactNode> = {
+  tabs: renderTabs,
+  button: renderButton,
+  toggle: renderToggle,
+  "toggle-group": renderToggleGroup,
+  badge: renderBadge,
+  item: renderItem,
+  marker: renderMarker,
+  alert: renderAlert,
+  bubble: renderBubble,
+};
