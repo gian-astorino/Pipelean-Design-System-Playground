@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { getDependencyGroups } from "@/lib/dependencies";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PresetToggle } from "@/components/preset-toggle";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -65,7 +66,10 @@ export default function DependenciesPage() {
             per avere un quadro completo di cosa c&apos;è &quot;sotto il cofano&quot;.
           </p>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <PresetToggle />
+          <ThemeToggle />
+        </div>
       </header>
 
       <nav className="flex flex-wrap gap-x-4 gap-y-1 border-y border-border py-2 text-sm text-muted-foreground">

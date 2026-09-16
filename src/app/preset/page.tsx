@@ -2,16 +2,16 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, Play, Settings, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, Palette, Play, Settings, Trash2 } from "lucide-react";
 
 import { demoRegistry } from "@/components/catalog/demos";
+import { PRESET_CLASS, PRESET_STORAGE_KEY } from "@/lib/preset-theme";
+import { PresetToggle } from "@/components/preset-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-
-const PRESET_CLASS = "theme-preset";
 
 const RAMP_STEPS = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"];
 
@@ -41,19 +41,31 @@ const SHOWCASE = [
   { slug: "dropdown-menu", label: "Dropdown" },
 ];
 
-/** Toggles the preset class on <html> rather than on a subtree: Radix
- *  portals (select, dropdown) render into document.body, so a subtree-scoped
- *  class would leave every floating panel on the old theme — exactly the
- *  components this page exists to compare. */
+/** Drives the same <html> class and stored choice as the toggle in every
+ *  page header, so the switch here isn't a second, competing source of
+ *  truth — flipping it holds while you browse the rest of the playground,
+ *  which is the whole point of evaluating a theme. */
 function usePresetToggle() {
   const [on, setOn] = React.useState(false);
 
   React.useEffect(() => {
-    document.documentElement.classList.toggle(PRESET_CLASS, on);
-    return () => document.documentElement.classList.remove(PRESET_CLASS);
-  }, [on]);
+    const read = () => setOn(document.documentElement.classList.contains(PRESET_CLASS));
+    read();
+    const observer = new MutationObserver(read);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
-  return { on, setOn };
+  const set = (next: boolean) => {
+    document.documentElement.classList.toggle(PRESET_CLASS, next);
+    try {
+      localStorage.setItem(PRESET_STORAGE_KEY, next ? "1" : "0");
+    } catch {
+      // private mode / blocked storage: the choice just won't survive a reload
+    }
+  };
+
+  return { on, setOn: set };
 }
 
 function Ramp({ name, cssVar }: { name: string; cssVar: string }) {
@@ -95,7 +107,10 @@ export default function PresetPage() {
             viene toccato: il preset è definito su una classe separata e si applica solo qui.
           </p>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <PresetToggle />
+          <ThemeToggle />
+        </div>
       </header>
 
       <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
@@ -106,10 +121,15 @@ export default function PresetPage() {
           </Label>
         </div>
         <p className="text-xs text-muted-foreground">
-          L&apos;interruttore aggiunge <code className="rounded bg-muted px-1 py-0.5">.theme-preset</code> su{" "}
-          <code className="rounded bg-muted px-1 py-0.5">&lt;html&gt;</code>, quindi cambiano anche i
-          pannelli flottanti di select e dropdown, che vivono in un portale fuori dalla pagina.
-          Funziona in combinazione col tema chiaro/scuro.
+          La scelta vale su <strong className="text-foreground">tutto il playground</strong> e resta
+          attiva mentre navighi: vai su Token o su un componente qualsiasi e li vedi con questo tema,
+          tabelle dei valori comprese. La trovi anche nell&apos;icona{" "}
+          <span className="inline-flex align-middle">
+            <Palette className="size-3.5 text-primary" />
+          </span>{" "}
+          in cima a ogni pagina. Si combina col tema chiaro/scuro, e poiché la classe sta su{" "}
+          <code className="rounded bg-muted px-1 py-0.5">&lt;html&gt;</code> cambiano anche i pannelli
+          flottanti di select e dropdown, che vivono in un portale fuori dalla pagina.
         </p>
       </div>
 

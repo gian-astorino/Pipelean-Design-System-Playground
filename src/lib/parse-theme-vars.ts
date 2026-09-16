@@ -1,7 +1,18 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export type ThemeVarMapping = Record<string, { light: string | null; dark: string | null }>;
+export type ThemeVarMapping = Record<
+  string,
+  {
+    light: string | null;
+    dark: string | null;
+    /** Same roles as above, but as they resolve while the `.theme-preset`
+     *  class is active. Only the roles the preset actually repoints differ;
+     *  the rest fall back to the base mapping. */
+    presetLight: string | null;
+    presetDark: string | null;
+  }
+>;
 
 function parseBlock(css: string, selector: string): Record<string, string> {
   const start = css.indexOf(`${selector} {`);
@@ -47,6 +58,10 @@ export function getThemeVarPrimitives(): ThemeVarMapping {
   );
   const light = parseBlock(css, ":root");
   const dark = parseBlock(css, ".dark");
+  // The preset repoints a handful of roles; anything it doesn't name keeps
+  // resolving through the base blocks above.
+  const presetLight = parseBlock(css, ".theme-preset");
+  const presetDark = parseBlock(css, ".theme-preset.dark");
 
   const mapping: ThemeVarMapping = {};
   for (const name of new Set([...Object.keys(light), ...Object.keys(dark)])) {
@@ -56,7 +71,12 @@ export function getThemeVarPrimitives(): ThemeVarMapping {
     // as null, which would otherwise look identical to "dark redefines
     // this as a literal color" (a different, real case, e.g. --card).
     const darkPrimitive = name in dark ? (dark[name] ? toPrimitiveName(dark[name]) : null) : lightPrimitive;
-    mapping[name] = { light: lightPrimitive, dark: darkPrimitive };
+    mapping[name] = {
+      light: lightPrimitive,
+      dark: darkPrimitive,
+      presetLight: name in presetLight ? toPrimitiveName(presetLight[name]) : lightPrimitive,
+      presetDark: name in presetDark ? toPrimitiveName(presetDark[name]) : darkPrimitive,
+    };
   }
   cached = mapping;
   return mapping;

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Palette } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PresetToggle } from "@/components/preset-toggle";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,7 +30,10 @@ export default function Home() {
           </div>
           <span className="font-semibold tracking-tight">Pipelean</span>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <PresetToggle />
+          <ThemeToggle />
+        </div>
       </header>
 
       <section className="flex flex-col gap-4">

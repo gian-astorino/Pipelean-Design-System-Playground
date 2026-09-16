@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { CatalogNav } from "@/components/catalog/catalog-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PresetToggle } from "@/components/preset-toggle";
 import { Button } from "@/components/ui/button";
 
 export default function ComponentsLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +19,10 @@ export default function ComponentsLayout({ children }: { children: React.ReactNo
           </Button>
           <h1 className="text-xl font-semibold tracking-tight">Componenti</h1>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <PresetToggle />
+          <ThemeToggle />
+        </div>
       </header>
       <div className="flex flex-1 flex-col gap-8 px-6 py-8 md:flex-row">
         <aside className="shrink-0 md:w-56">
