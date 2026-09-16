@@ -134,7 +134,12 @@ function usePixelValue(match: TokenMatch) {
 
 function formatPixelValue(match: TokenMatch, value: string) {
   if (match.category === "radius") return formatBorderRadius(value);
-  if (match.category === "shadow") return formatBoxShadow(value, 70);
+  // A 70-char monospace string (the previous limit) is ~500px wide on
+  // its own — enough to blow the whole table out past its min-width
+  // and, since that stretch isn't always contained by the table's own
+  // overflow-x-auto wrapper, sometimes the page itself. The full value
+  // is always in the `title` tooltip; the cell only needs a preview.
+  if (match.category === "shadow") return formatBoxShadow(value, 40);
   return value;
 }
 
@@ -155,7 +160,7 @@ function ColorValue({ match }: { match: TokenMatch }) {
   }, [match]);
 
   return (
-    <code className="whitespace-nowrap font-mono text-xs text-foreground" title={value}>
+    <code className="block max-w-[220px] truncate font-mono text-xs text-foreground" title={value}>
       {value || "…"}
     </code>
   );
@@ -176,7 +181,7 @@ function FontWeightValue({ match }: { match: TokenMatch }) {
   }, [match]);
 
   return (
-    <code className="whitespace-nowrap font-mono text-xs text-foreground" title={value}>
+    <code className="block max-w-[220px] truncate font-mono text-xs text-foreground" title={value}>
       {value || "…"}
     </code>
   );
@@ -197,7 +202,7 @@ function PixelValue({ match }: { match: TokenMatch }) {
       >
         Aa
       </span>
-      <code className="whitespace-nowrap font-mono text-xs text-foreground" title={value}>
+      <code className="block max-w-[220px] truncate font-mono text-xs text-foreground" title={value}>
         {formatted || "…"}
       </code>
     </>

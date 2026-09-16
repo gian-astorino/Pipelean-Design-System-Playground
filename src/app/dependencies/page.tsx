@@ -27,7 +27,7 @@ function TableShell({
         <h3 className="font-medium">{title}</h3>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-border">
+      <div className="overflow-x-auto rounded-lg border border-border [contain:layout]">
         <table className="w-full min-w-[640px] border-collapse text-left">
           <thead>
             <tr className="border-b border-border bg-muted/40 text-xs text-muted-foreground">

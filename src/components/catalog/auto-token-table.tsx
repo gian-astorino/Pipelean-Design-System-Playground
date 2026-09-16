@@ -60,7 +60,7 @@ export function AutoTokenTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border">
+    <div className="overflow-x-auto rounded-lg border border-border [contain:layout]">
       <table className="w-full min-w-[520px] border-collapse text-left text-sm">
         <thead>
           <tr className="border-b border-border bg-muted/40 text-xs text-muted-foreground">
