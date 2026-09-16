@@ -32,7 +32,7 @@ const sections = [
 
 export default function TokensPage() {
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-10 px-6 py-10">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-10">
       <ColorProbes />
       <header className="flex items-center justify-between gap-4">
         <div className="flex flex-col gap-1">

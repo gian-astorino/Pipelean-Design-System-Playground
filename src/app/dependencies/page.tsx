@@ -48,7 +48,7 @@ export default function DependenciesPage() {
   const groups = getDependencyGroups();
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-10 px-6 py-10">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-10">
       <header className="flex items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <Button asChild variant="ghost" size="sm" className="w-fit -ml-2">

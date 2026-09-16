@@ -48,7 +48,7 @@ export default function Home() {
           </code>
           , cos&igrave; ogni modifica &egrave; una riga chiara nel diff.
         </p>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Button asChild>
             <Link href="/tokens">
               Esplora i token
