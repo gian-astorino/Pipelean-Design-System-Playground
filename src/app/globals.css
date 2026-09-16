@@ -56,26 +56,6 @@
   --color-brand-900: oklch(0.29 0.1 262);
   --color-brand-950: oklch(0.2 0.07 262);
 
-  /*
-   * Candidate ramp under evaluation — shadcn's "blue", the theme picked in
-   * preset b1aIcFPlK. Values lifted verbatim from the shadcn CLI package
-   * (shadcn@4.21.0), not hand-mixed. Lives alongside the brand ramp rather
-   * than replacing it, so the two can be compared on /preset without
-   * touching the live theme. Delete this block once the preset is either
-   * adopted (promote it into --color-brand-*) or rejected.
-   */
-  --color-preset-50: oklch(97% 0.014 254.604);
-  --color-preset-100: oklch(93.2% 0.032 255.585);
-  --color-preset-200: oklch(88.2% 0.059 254.128);
-  --color-preset-300: oklch(80.9% 0.105 251.813);
-  --color-preset-400: oklch(70.7% 0.165 254.624);
-  --color-preset-500: oklch(62.3% 0.214 259.815);
-  --color-preset-600: oklch(54.6% 0.245 262.881);
-  --color-preset-700: oklch(48.8% 0.243 264.376);
-  --color-preset-800: oklch(42.4% 0.199 265.638);
-  --color-preset-900: oklch(37.9% 0.146 265.522);
-  --color-preset-950: oklch(28.2% 0.091 267.935);
-
   /* Radius base — every radius utility (sm/md/lg/xl) derives from this. */
   --radius: 0.625rem;
 
@@ -196,41 +176,6 @@
   --sidebar-accent-foreground: var(--color-neutral-100);
   --sidebar-border: var(--color-neutral-800);
   --sidebar-ring: var(--color-brand-400);
-}
-
-/* ---------------------------------------------------------------------
-   2b) PRESET UNDER EVALUATION — same roles, repointed at --color-preset-*
-   Scoped to a class instead of overwriting :root, so adopting it is a
-   decision and not an accident: nothing here changes the live theme until
-   .theme-preset is put on an element. Only the roles that actually point
-   at the brand ramp are listed — everything else (surfaces, status,
-   structure) is already neutral-based and identical in both themes, which
-   is itself the answer to "how much of the system does the brand touch".
-   --------------------------------------------------------------------- */
-.theme-preset {
-  --primary: var(--color-preset-600);
-  --primary-foreground: var(--color-preset-50);
-  --accent: var(--color-preset-50);
-  --accent-foreground: var(--color-preset-700);
-  --ring: var(--color-preset-500);
-  --chart-1: var(--color-preset-500);
-  --chart-2: var(--color-preset-700);
-  --sidebar-primary: var(--color-preset-600);
-  --sidebar-primary-foreground: var(--color-preset-50);
-  --sidebar-ring: var(--color-preset-500);
-}
-
-.dark .theme-preset,
-.theme-preset.dark {
-  --primary: var(--color-preset-400);
-  --primary-foreground: var(--color-preset-950);
-  --accent-foreground: var(--color-preset-300);
-  --ring: var(--color-preset-400);
-  --chart-1: var(--color-preset-400);
-  --chart-2: var(--color-preset-300);
-  --sidebar-primary: var(--color-preset-400);
-  --sidebar-primary-foreground: var(--color-preset-950);
-  --sidebar-ring: var(--color-preset-400);
 }
 
 /* ---------------------------------------------------------------------

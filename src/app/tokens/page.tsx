@@ -17,7 +17,6 @@ import { BaseColorTable, SemanticColorTable, ColorProbes } from "@/components/co
 import { ScaleTable } from "@/components/scale-table";
 import { ComponentTokenTable } from "@/components/component-token-table";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { PresetToggle } from "@/components/preset-toggle";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -55,10 +54,7 @@ export default function TokensPage() {
             e ricarica: qui vedrai esattamente cosa è cambiato.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <PresetToggle />
-          <ThemeToggle />
-        </div>
+        <ThemeToggle />
       </header>
 
       <nav className="flex flex-wrap gap-x-4 gap-y-1 border-y border-border py-2 text-sm text-muted-foreground">
