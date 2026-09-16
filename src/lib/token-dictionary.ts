@@ -156,7 +156,11 @@ const SIZE_PREFIX_PARTS: Record<string, string> = {
 // try to recognize arbitrary-selector modifiers like "[a&]:" or
 // "*:" — unmatched text before a utility is simply left uncaptured,
 // which is fine, it just means that particular class gets no state label.
-const MODIFIER_SEGMENT = String.raw`[\w-]+(?:\[[^\]]*\])?`;
+// The trailing "(?:/[\w-]+)?" absorbs a named-group reference, e.g.
+// "group-data-[size=sm]/avatar:size-2" — without it, the "/avatar" breaks
+// the segment mid-match and the chain match restarts at "avatar:",
+// silently losing the "size=sm" condition that's the whole point of the row.
+const MODIFIER_SEGMENT = String.raw`[\w-]+(?:\[[^\]]*\])?(?:/[\w-]+)?`;
 const MODIFIER_CHAIN = `((?:${MODIFIER_SEGMENT}:)*)`;
 
 function buildRegexes() {
@@ -208,6 +212,26 @@ const MODIFIER_LABELS: Record<string, string> = {
   "aria-disabled": "disabilitato",
   first: "primo elemento",
   last: "ultimo elemento",
+  // Responsive breakpoints — Tailwind's min-width scale. Without these,
+  // a class like "md:text-sm" next to the unconditional "text-base" looks
+  // like two conflicting values on the same element instead of "16px up
+  // to 768px, 14px from there".
+  sm: "da 640px",
+  md: "da 768px",
+  lg: "da 1024px",
+  xl: "da 1280px",
+  "2xl": "da 1536px",
+  // Pseudo-elements / pseudo-classes that target a different sub-part of
+  // the element, not a conditional state on the element itself — e.g.
+  // Input's "file:h-7" sets the height of its file-picker button, not a
+  // second height for the input box.
+  file: "bottone file",
+  placeholder: "placeholder",
+  selection: "testo selezionato",
+  before: "::before",
+  after: "::after",
+  marker: "marcatore",
+  backdrop: "backdrop",
 };
 
 const DATA_STATE_LABELS: Record<string, string> = {
@@ -219,6 +243,14 @@ const DATA_STATE_LABELS: Record<string, string> = {
   closed: "chiuso",
   checked: "selezionato",
   unchecked: "deselezionato",
+  true: "attivo",
+  false: "inattivo",
+  top: "lato superiore",
+  right: "lato destro",
+  bottom: "lato inferiore",
+  left: "lato sinistro",
+  horizontal: "orizzontale",
+  vertical: "verticale",
 };
 
 /** e.g. "data-[state=active]" or "group-data-[state=open]" -> "attivo" / "aperto" */
@@ -227,13 +259,36 @@ function labelForDataState(segment: string): string | null {
   return m ? (DATA_STATE_LABELS[m[1]] ?? null) : null;
 }
 
+/** Fallback for any other data-[key=value] / data-[key] / aria-[key=value]
+ *  modifier that isn't the well-known "state" shorthand above — e.g.
+ *  "group-data-[side=right]" -> "lato destro" would be nice but isn't
+ *  worth a bespoke label per key; "side: lato destro" is still far more
+ *  useful than the row silently showing no context at all. A leading
+ *  "has-" (checked against a descendant, not the element itself) gets
+ *  called out explicitly so it doesn't read as a state on the element. */
+function labelForAnyAttr(segment: string): string | null {
+  const hasDescendant = /^(?:group-|peer-)?has-/.test(segment);
+  const base = segment.replace(/^(?:group-|peer-)?(?:has-)?/, "");
+  const m = base.match(/^(?:data|aria)-\[([\w-]+)(?:=([\w-]+))?\]$/);
+  if (!m) return null;
+  const [, key, value] = m;
+  const label = value ? `${key}: ${DATA_STATE_LABELS[value] ?? value}` : key;
+  return hasDescendant ? `se contiene ${label}` : label;
+}
+
 /** Turns a captured modifier chain like "dark:focus-visible:" into a
  *  short label like "dark, focus" for the Parte column, or null when
- *  the class is unconditional (or its modifiers aren't recognized). */
+ *  the class is unconditional. Every segment gets some label — even
+ *  an unrecognized data-[...] / aria-[...] attribute falls back to its
+ *  raw "key: value" — so a modifier never silently vanishes and leaves a
+ *  conditional class looking like an unexplained duplicate. */
 function describeModifiers(chain: string): string | null {
   const labels: string[] = [];
-  for (const segment of chain.split(":").filter(Boolean)) {
-    const label = MODIFIER_LABELS[segment] ?? labelForDataState(segment);
+  for (const raw of chain.split(":").filter(Boolean)) {
+    // drop a trailing named-group reference, e.g. ".../avatar" — it scopes
+    // which ancestor the modifier watches, not what the modifier means.
+    const segment = raw.replace(/\/[\w-]+$/, "");
+    const label = MODIFIER_LABELS[segment] ?? labelForDataState(segment) ?? labelForAnyAttr(segment);
     if (label && !labels.includes(label)) labels.push(label);
   }
   return labels.length ? labels.join(", ") : null;

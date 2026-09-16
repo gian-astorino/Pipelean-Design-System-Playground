@@ -414,14 +414,18 @@ function FieldDemo() {
   );
 }
 
+const INPUT_TYPES = ["text", "email", "password", "number", "search", "date", "file"] as const;
+
 function InputDemo() {
+  const [type, setType] = React.useState<(typeof INPUT_TYPES)[number]>("text");
   const [error, setError] = React.useState(false);
   return (
     <DemoStack>
       <DemoControls>
+        <VariantSelect label="Type" value={type} onValueChange={setType} options={INPUT_TYPES} />
         <ErrorToggle checked={error} onCheckedChange={setError} />
       </DemoControls>
-      <Input placeholder="Cerca pipeline…" className="max-w-sm" aria-invalid={error} />
+      <Input type={type} placeholder="Cerca pipeline…" className="max-w-sm" aria-invalid={error} />
     </DemoStack>
   );
 }
