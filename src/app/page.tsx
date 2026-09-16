@@ -58,10 +58,13 @@ export default function Home() {
           <Button asChild variant="outline">
             <Link href="/components/button/">Libreria componenti</Link>
           </Button>
+          <Button asChild variant="outline">
+            <Link href="/dependencies">Dipendenze esterne</Link>
+          </Button>
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2">
+      <section className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Token base</CardTitle>
@@ -93,6 +96,25 @@ export default function Home() {
                 className={`rounded-md px-2 py-1 text-xs font-medium ${s.className}`}
               >
                 {s.label}
+              </span>
+            ))}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Dipendenze esterne</CardTitle>
+            <CardDescription>
+              Font, icon pack e librerie dietro ogni componente — quello che
+              vive nel codice, non nei token.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            {["Geist", "lucide-react", "radix-ui", "sonner"].map((s) => (
+              <span
+                key={s}
+                className="rounded-md bg-muted px-2 py-1 font-mono text-xs font-medium text-muted-foreground"
+              >
+                {s}
               </span>
             ))}
           </CardContent>
