@@ -175,6 +175,7 @@ function SeparatorDemo() {
 }
 
 function SidebarDemo() {
+  const [active, setActive] = React.useState("Runs");
   return (
     <SidebarProvider className="h-[360px] min-h-0 w-full max-w-md overflow-hidden rounded-lg border">
       <Sidebar collapsible="none" className="w-48">
@@ -186,7 +187,9 @@ function SidebarDemo() {
               <SidebarMenu>
                 {["Overview", "Runs", "Settings"].map((label) => (
                   <SidebarMenuItem key={label}>
-                    <SidebarMenuButton isActive={label === "Runs"}>{label}</SidebarMenuButton>
+                    <SidebarMenuButton isActive={label === active} onClick={() => setActive(label)}>
+                      {label}
+                    </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
