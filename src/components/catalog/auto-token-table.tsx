@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { CATEGORY_LABELS, type TokenMatch } from "@/lib/token-dictionary";
 import type { ThemeVarMapping } from "@/lib/parse-theme-vars";
+import { semanticTokenGroup } from "@/lib/design-tokens";
 import { TokenValueCell } from "@/components/catalog/token-value";
 
 /** Tracks whether `.dark` is currently applied to <html>, so the
@@ -67,6 +68,7 @@ export function AutoTokenTable({
             <th className="px-3 py-2 font-medium">Parte</th>
             <th className="px-3 py-2 font-medium">Classe Tailwind</th>
             <th className="px-3 py-2 font-medium">Token primitivo</th>
+            <th className="px-3 py-2 font-medium">Gruppo</th>
             <th className="px-3 py-2 font-medium">Valore</th>
             <th className="px-3 py-2 font-medium">Categoria</th>
           </tr>
@@ -83,6 +85,9 @@ export function AutoTokenTable({
               </td>
               <td className="whitespace-nowrap px-3 py-2 font-mono text-xs text-muted-foreground">
                 {primitiveLabel(m, primitives, mode)}
+              </td>
+              <td className="whitespace-nowrap px-3 py-2 text-xs text-muted-foreground">
+                {semanticTokenGroup(m.cssVar) ?? "—"}
               </td>
               <td className="px-3 py-2">
                 <TokenValueCell match={m} />

@@ -150,6 +150,29 @@ export const semanticGroups: SemanticGroup[] = [
   },
 ];
 
+/** cssVar (and, where it has one, foregroundVar too) -> its group's
+ *  short label, e.g. "--primary" and "--primary-foreground" both ->
+ *  "Actions". Built from semanticGroups itself so it can't drift —
+ *  the parenthetical in a category name ("Status (pipeline runs)")
+ *  is dropped here, kept only for the fuller section heading on the
+ *  /tokens page. */
+const SEMANTIC_TOKEN_GROUP: Record<string, string> = Object.fromEntries(
+  semanticGroups.flatMap((group) => {
+    const shortLabel = group.category.split(" (")[0];
+    return group.tokens.flatMap((token) => [
+      [token.cssVar, shortLabel],
+      ...(token.foregroundVar ? [[token.foregroundVar, shortLabel]] : []),
+    ]);
+  })
+);
+
+/** Which semantic group (Surfaces, Actions, Status, ...) a semantic
+ *  color CSS var belongs to — undefined for anything that isn't one
+ *  of Pipelean's named semantic roles (a scale token, a literal, ...). */
+export function semanticTokenGroup(cssVar: string): string | undefined {
+  return SEMANTIC_TOKEN_GROUP[cssVar];
+}
+
 /* =====================================================================
  * SCALE TOKENS — spacing, radius, shadow, typography.
  * Tailwind v4 ships these as its own `@theme` defaults (see
