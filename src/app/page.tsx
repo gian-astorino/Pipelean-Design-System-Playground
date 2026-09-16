@@ -61,6 +61,9 @@ export default function Home() {
           <Button asChild variant="outline">
             <Link href="/dependencies">Dipendenze esterne</Link>
           </Button>
+          <Button asChild variant="outline">
+            <Link href="/preset">Preset in valutazione</Link>
+          </Button>
         </div>
       </section>
 
