@@ -73,6 +73,11 @@ export type TokenMatch = {
   /** Which visual part of the component this class controls (sfondo,
    *  bordo, testo, ...), in Italian to match the rest of the UI. */
   part: string;
+  /** Which state this class only applies under (hover, dark, focus, ...),
+   *  or null when it's unconditional — e.g. "hover:bg-primary/90" and
+   *  "dark:bg-destructive/60" both need this, otherwise two rows for
+   *  the same "Sfondo" look like unexplained duplicates. */
+  state: string | null;
 };
 
 const COLOR_PREFIXES = ["bg", "text", "border", "ring", "outline", "decoration", "divide", "placeholder", "caret", "fill", "stroke"];
@@ -107,6 +112,16 @@ const PART_LABELS: Record<Exclude<TokenCategory, "color">, string> = {
   leading: "Interlinea",
 };
 
+// Captures the chain of state modifiers (hover:, dark:, aria-invalid:,
+// data-[state=on]:, ...) immediately before a utility class, so a class
+// that only applies conditionally can say so instead of looking like an
+// unexplained duplicate of the unconditional one. Deliberately doesn't
+// try to recognize arbitrary-selector modifiers like "[a&]:" or
+// "*:" — unmatched text before a utility is simply left uncaptured,
+// which is fine, it just means that particular class gets no state label.
+const MODIFIER_SEGMENT = String.raw`[\w-]+(?:\[[^\]]*\])?`;
+const MODIFIER_CHAIN = `((?:${MODIFIER_SEGMENT}:)*)`;
+
 function buildRegexes() {
   // Longest-first: regex alternation takes the first alternative that
   // matches, so without this "primary" would win over "primary-foreground"
@@ -114,22 +129,72 @@ function buildRegexes() {
   const colorAlt = [...SEMANTIC_COLOR_NAMES].sort((a, b) => b.length - a.length).join("|");
   const prefixAlt = COLOR_PREFIXES.join("|");
   return {
-    color: new RegExp(`\\b(?:${prefixAlt})-(?:${colorAlt})(?:/\\d{1,3})?\\b`, "g"),
+    color: new RegExp(`${MODIFIER_CHAIN}\\b(?:${prefixAlt})-(?:${colorAlt})(?:/\\d{1,3})?\\b`, "g"),
     // (?!-) rejects "rounded-none" and directional/logical-corner classes
     // (rounded-l-md, rounded-tl-lg, ...): without it, the optional suffix
     // group simply fails to match "-l-md" and falls back to a bare
     // "rounded" match, misreporting a corner-specific or no-op radius as
     // the default scale value.
-    radius: new RegExp(`\\brounded(?:-(?:${RADIUS_NAMES.join("|")}))?\\b(?!-)`, "g"),
-    shadow: new RegExp(`\\bshadow-(?:${SHADOW_NAMES.join("|")})\\b`, "g"),
-    fontSize: new RegExp(`\\btext-(?:${FONT_SIZE_NAMES.join("|")})\\b`, "g"),
-    fontWeight: new RegExp(`\\bfont-(?:${FONT_WEIGHT_NAMES.join("|")})\\b`, "g"),
-    tracking: new RegExp(`\\btracking-(?:${TRACKING_NAMES.join("|")})\\b`, "g"),
-    leading: new RegExp(`\\bleading-(?:${LEADING_NAMES.join("|")})\\b`, "g"),
+    radius: new RegExp(`${MODIFIER_CHAIN}\\brounded(?:-(?:${RADIUS_NAMES.join("|")}))?\\b(?!-)`, "g"),
+    shadow: new RegExp(`${MODIFIER_CHAIN}\\bshadow-(?:${SHADOW_NAMES.join("|")})\\b`, "g"),
+    fontSize: new RegExp(`${MODIFIER_CHAIN}\\btext-(?:${FONT_SIZE_NAMES.join("|")})\\b`, "g"),
+    fontWeight: new RegExp(`${MODIFIER_CHAIN}\\bfont-(?:${FONT_WEIGHT_NAMES.join("|")})\\b`, "g"),
+    tracking: new RegExp(`${MODIFIER_CHAIN}\\btracking-(?:${TRACKING_NAMES.join("|")})\\b`, "g"),
+    leading: new RegExp(`${MODIFIER_CHAIN}\\bleading-(?:${LEADING_NAMES.join("|")})\\b`, "g"),
   };
 }
 
 const REGEXES = buildRegexes();
+
+/** Friendly Italian label for a single recognized modifier keyword. */
+const MODIFIER_LABELS: Record<string, string> = {
+  hover: "hover",
+  "group-hover": "hover",
+  "peer-hover": "hover",
+  focus: "focus",
+  "focus-visible": "focus",
+  "focus-within": "focus",
+  "group-focus": "focus",
+  "peer-focus": "focus",
+  active: "attivo",
+  disabled: "disabilitato",
+  dark: "dark",
+  "aria-invalid": "invalido",
+  "aria-selected": "selezionato",
+  "aria-checked": "selezionato",
+  "aria-disabled": "disabilitato",
+  first: "primo elemento",
+  last: "ultimo elemento",
+};
+
+const DATA_STATE_LABELS: Record<string, string> = {
+  on: "attivo",
+  off: "inattivo",
+  active: "attivo",
+  inactive: "inattivo",
+  open: "aperto",
+  closed: "chiuso",
+  checked: "selezionato",
+  unchecked: "deselezionato",
+};
+
+/** e.g. "data-[state=active]" or "group-data-[state=open]" -> "attivo" / "aperto" */
+function labelForDataState(segment: string): string | null {
+  const m = segment.match(/^(?:group-|peer-)?data-\[state=([\w-]+)\]$/);
+  return m ? (DATA_STATE_LABELS[m[1]] ?? null) : null;
+}
+
+/** Turns a captured modifier chain like "dark:focus-visible:" into a
+ *  short label like "dark, focus" for the Parte column, or null when
+ *  the class is unconditional (or its modifiers aren't recognized). */
+function describeModifiers(chain: string): string | null {
+  const labels: string[] = [];
+  for (const segment of chain.split(":").filter(Boolean)) {
+    const label = MODIFIER_LABELS[segment] ?? labelForDataState(segment);
+    if (label && !labels.includes(label)) labels.push(label);
+  }
+  return labels.length ? labels.join(", ") : null;
+}
 
 function cssVarForColorClass(className: string): string {
   const [, ...rest] = className.split("-");
@@ -138,36 +203,53 @@ function cssVarForColorClass(className: string): string {
   return `--${name}`;
 }
 
+/** Runs a MODIFIER_CHAIN-prefixed regex and yields [utilityClassName, state]
+ *  pairs — the modifier chain (match[1]) stripped back off match[0] and
+ *  turned into a state label, first occurrence wins if the same bare
+ *  class shows up under different modifiers. */
+function* findUtilities(source: string, regex: RegExp): Generator<[string, string | null]> {
+  for (const match of source.matchAll(regex)) {
+    const chain = match[1];
+    yield [match[0].slice(chain.length), describeModifiers(chain)];
+  }
+}
+
 /** Scans component source text for every recognized token-bearing
  *  utility class and returns deduplicated, categorized matches. */
 export function extractTokenMatches(source: string): TokenMatch[] {
   const seen = new Map<string, TokenMatch>();
 
-  const add = (className: string, category: TokenCategory, cssVar: string, part: string) => {
-    if (!seen.has(className)) seen.set(className, { className, category, cssVar, part });
+  const add = (
+    className: string,
+    category: TokenCategory,
+    cssVar: string,
+    part: string,
+    state: string | null
+  ) => {
+    if (!seen.has(className)) seen.set(className, { className, category, cssVar, part, state });
   };
 
-  for (const m of source.match(REGEXES.color) ?? []) {
-    add(m, "color", cssVarForColorClass(m), partForColorClass(m));
+  for (const [m, state] of findUtilities(source, REGEXES.color)) {
+    add(m, "color", cssVarForColorClass(m), partForColorClass(m), state);
   }
-  for (const m of source.match(REGEXES.radius) ?? []) {
+  for (const [m, state] of findUtilities(source, REGEXES.radius)) {
     const suffix = m.includes("-") ? m.split("-").slice(1).join("-") : "sm";
-    add(m, "radius", `--radius-${suffix}`, PART_LABELS.radius);
+    add(m, "radius", `--radius-${suffix}`, PART_LABELS.radius, state);
   }
-  for (const m of source.match(REGEXES.shadow) ?? []) {
-    add(m, "shadow", `--shadow-${m.split("-").slice(1).join("-")}`, PART_LABELS.shadow);
+  for (const [m, state] of findUtilities(source, REGEXES.shadow)) {
+    add(m, "shadow", `--shadow-${m.split("-").slice(1).join("-")}`, PART_LABELS.shadow, state);
   }
-  for (const m of source.match(REGEXES.fontSize) ?? []) {
-    add(m, "font-size", `--text-${m.split("-").slice(1).join("-")}`, PART_LABELS["font-size"]);
+  for (const [m, state] of findUtilities(source, REGEXES.fontSize)) {
+    add(m, "font-size", `--text-${m.split("-").slice(1).join("-")}`, PART_LABELS["font-size"], state);
   }
-  for (const m of source.match(REGEXES.fontWeight) ?? []) {
-    add(m, "font-weight", `--font-weight-${m.split("-").slice(1).join("-")}`, PART_LABELS["font-weight"]);
+  for (const [m, state] of findUtilities(source, REGEXES.fontWeight)) {
+    add(m, "font-weight", `--font-weight-${m.split("-").slice(1).join("-")}`, PART_LABELS["font-weight"], state);
   }
-  for (const m of source.match(REGEXES.tracking) ?? []) {
-    add(m, "tracking", `--tracking-${m.split("-").slice(1).join("-")}`, PART_LABELS.tracking);
+  for (const [m, state] of findUtilities(source, REGEXES.tracking)) {
+    add(m, "tracking", `--tracking-${m.split("-").slice(1).join("-")}`, PART_LABELS.tracking, state);
   }
-  for (const m of source.match(REGEXES.leading) ?? []) {
-    add(m, "leading", `--leading-${m.split("-").slice(1).join("-")}`, PART_LABELS.leading);
+  for (const [m, state] of findUtilities(source, REGEXES.leading)) {
+    add(m, "leading", `--leading-${m.split("-").slice(1).join("-")}`, PART_LABELS.leading, state);
   }
 
   return [...seen.values()].sort((a, b) =>

@@ -145,7 +145,7 @@ const tabsSchema: VariantSchema = {
   dimensions: {
     variant: {
       // shadow-sm only styles the active trigger when TabsList is "default"
-      default: "bg-muted shadow-sm",
+      default: "bg-muted data-[state=active]:shadow-sm",
       line: "gap-1 bg-transparent",
     },
   },
