@@ -12,6 +12,13 @@ function ScrollArea({
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
+      // Radix defaults to type="hover": the scrollbar (and the thumb's
+      // scroll listener with it) is unmounted whenever the pointer isn't
+      // hovering, and only remounts on the next pointerenter — so wheel-
+      // scrolling without the cursor re-entering leaves the thumb frozen
+      // until you hover again. type="scroll" tracks the native scroll
+      // event directly instead, so the thumb always follows the content.
+      type="scroll"
       className={cn("relative", className)}
       {...props}
     >
