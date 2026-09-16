@@ -82,7 +82,10 @@ export type TokenMatch = {
   state: string | null;
 };
 
-const COLOR_PREFIXES = ["bg", "text", "border", "ring", "outline", "decoration", "divide", "placeholder", "caret", "fill", "stroke"];
+// "ring-offset" is two words (ring-offset-background sets the ring's
+// offset color, distinct from ring-background) — listed, and matched,
+// before "ring" so the longer prefix wins.
+const COLOR_PREFIXES = ["ring-offset", "bg", "text", "border", "ring", "outline", "decoration", "divide", "placeholder", "caret", "fill", "stroke"];
 
 /** Human label for each color-utility prefix — "which part" a bg-*,
  *  text-*, border-*, ... class is painting. */
@@ -91,6 +94,7 @@ const COLOR_PREFIX_PARTS: Record<string, string> = {
   text: "Testo",
   border: "Bordo",
   ring: "Anello di focus",
+  "ring-offset": "Offset dell'anello di focus",
   outline: "Contorno",
   decoration: "Decorazione testo",
   divide: "Separatore tra elementi",
@@ -100,8 +104,17 @@ const COLOR_PREFIX_PARTS: Record<string, string> = {
   stroke: "Icona (stroke)",
 };
 
+/** Finds the longest COLOR_PREFIXES entry a class starts with — a plain
+ *  split on the first hyphen would break "ring-offset-background" (it'd
+ *  chop after "ring", leaving "offset-background" as the "token name"). */
+function matchedColorPrefix(className: string): string | undefined {
+  return [...COLOR_PREFIXES]
+    .sort((a, b) => b.length - a.length)
+    .find((p) => className.startsWith(`${p}-`));
+}
+
 function partForColorClass(className: string): string {
-  const prefix = className.split("-")[0];
+  const prefix = matchedColorPrefix(className) ?? className.split("-")[0];
   return COLOR_PREFIX_PARTS[prefix] ?? prefix;
 }
 
@@ -227,9 +240,10 @@ function describeModifiers(chain: string): string | null {
 }
 
 function cssVarForColorClass(className: string): string {
-  const [, ...rest] = className.split("-");
+  const prefix = matchedColorPrefix(className);
+  const rest = prefix ? className.slice(prefix.length + 1) : className.split("-").slice(1).join("-");
   // strip a trailing opacity modifier like /50
-  const name = rest.join("-").replace(/\/\d{1,3}$/, "");
+  const name = rest.replace(/\/\d{1,3}$/, "");
   return `--${name}`;
 }
 
