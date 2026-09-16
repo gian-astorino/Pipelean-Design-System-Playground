@@ -64,7 +64,9 @@ export type TokenCategory =
   | "font-size"
   | "font-weight"
   | "tracking"
-  | "leading";
+  | "leading"
+  | "padding"
+  | "size";
 
 export type TokenMatch = {
   className: string;
@@ -103,13 +105,35 @@ function partForColorClass(className: string): string {
   return COLOR_PREFIX_PARTS[prefix] ?? prefix;
 }
 
-const PART_LABELS: Record<Exclude<TokenCategory, "color">, string> = {
+const PART_LABELS: Record<Exclude<TokenCategory, "color" | "padding" | "size">, string> = {
   radius: "Raggio degli angoli",
   shadow: "Ombra",
   "font-size": "Dimensione testo",
   "font-weight": "Peso testo",
   tracking: "Spaziatura lettere",
   leading: "Interlinea",
+};
+
+/** Human label for each padding-utility prefix — p-4 sets every side at
+ *  once, px-/py- set a pair, pt-/pr-/pb-/pl- set one side, ps-/pe- are
+ *  the logical (writing-direction-aware) start/end equivalents. */
+const PADDING_PREFIX_PARTS: Record<string, string> = {
+  p: "Padding",
+  px: "Padding orizzontale",
+  py: "Padding verticale",
+  pt: "Padding superiore",
+  pr: "Padding destro",
+  pb: "Padding inferiore",
+  pl: "Padding sinistro",
+  ps: "Padding iniziale",
+  pe: "Padding finale",
+};
+
+/** Human label for each size-utility prefix. */
+const SIZE_PREFIX_PARTS: Record<string, string> = {
+  w: "Larghezza",
+  h: "Altezza",
+  size: "Dimensione (larghezza e altezza)",
 };
 
 // Captures the chain of state modifiers (hover:, dark:, aria-invalid:,
@@ -141,6 +165,12 @@ function buildRegexes() {
     fontWeight: new RegExp(`${MODIFIER_CHAIN}\\bfont-(?:${FONT_WEIGHT_NAMES.join("|")})\\b`, "g"),
     tracking: new RegExp(`${MODIFIER_CHAIN}\\btracking-(?:${TRACKING_NAMES.join("|")})\\b`, "g"),
     leading: new RegExp(`${MODIFIER_CHAIN}\\bleading-(?:${LEADING_NAMES.join("|")})\\b`, "g"),
+    // Numeric scale only (p-4, px-2, size-9, ...) — every one of these
+    // resolves through the single shared --spacing primitive
+    // (calc(var(--spacing) * N)), unlike keyword values (w-full,
+    // h-auto, ...) which aren't tied to a design token at all.
+    padding: new RegExp(`${MODIFIER_CHAIN}\\bp(?:[xytrblse])?-\\d+(?:\\.\\d+)?\\b`, "g"),
+    size: new RegExp(`${MODIFIER_CHAIN}\\b(?:size|w|h)-\\d+(?:\\.\\d+)?\\b`, "g"),
   };
 }
 
@@ -203,6 +233,16 @@ function cssVarForColorClass(className: string): string {
   return `--${name}`;
 }
 
+function partForPaddingClass(className: string): string {
+  const prefix = className.split("-")[0];
+  return PADDING_PREFIX_PARTS[prefix] ?? prefix;
+}
+
+function partForSizeClass(className: string): string {
+  const prefix = className.split("-")[0];
+  return SIZE_PREFIX_PARTS[prefix] ?? prefix;
+}
+
 /** Runs a MODIFIER_CHAIN-prefixed regex and yields [utilityClassName, state]
  *  pairs — the modifier chain (match[1]) stripped back off match[0] and
  *  turned into a state label, first occurrence wins if the same bare
@@ -251,6 +291,12 @@ export function extractTokenMatches(source: string): TokenMatch[] {
   for (const [m, state] of findUtilities(source, REGEXES.leading)) {
     add(m, "leading", `--leading-${m.split("-").slice(1).join("-")}`, PART_LABELS.leading, state);
   }
+  for (const [m, state] of findUtilities(source, REGEXES.padding)) {
+    add(m, "padding", "--spacing", partForPaddingClass(m), state);
+  }
+  for (const [m, state] of findUtilities(source, REGEXES.size)) {
+    add(m, "size", "--spacing", partForSizeClass(m), state);
+  }
 
   return [...seen.values()].sort((a, b) =>
     a.category === b.category ? a.className.localeCompare(b.className) : a.category.localeCompare(b.category)
@@ -265,4 +311,6 @@ export const CATEGORY_LABELS: Record<TokenCategory, string> = {
   "font-weight": "Font weight",
   tracking: "Tracking",
   leading: "Leading",
+  padding: "Padding",
+  size: "Size",
 };

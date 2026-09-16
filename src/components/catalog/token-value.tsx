@@ -46,6 +46,69 @@ function applyOpacityModifier(hex: string, className: string): string {
   return `${hex.slice(0, 7)}${alphaByte}`;
 }
 
+/** padding/size classes need the specific side the prefix controls
+ *  (p- sets all four, px-/py- a pair, pt-/pr-/pb-/pl- one side, ps-/pe-
+ *  the logical start/end equivalent; w-/size- read width, h- height) —
+ *  unlike the other categories, one CSS property per whole category
+ *  isn't enough here. */
+function stylePropFor(match: TokenMatch): keyof CSSStyleDeclaration {
+  const prefix = match.className.split("-")[0];
+  switch (match.category) {
+    case "radius":
+      return "borderRadius";
+    case "shadow":
+      return "boxShadow";
+    case "font-size":
+      return "fontSize";
+    case "tracking":
+      return "letterSpacing";
+    case "padding":
+      switch (prefix) {
+        case "px":
+        case "pl":
+          return "paddingLeft";
+        case "py":
+        case "pt":
+          return "paddingTop";
+        case "pr":
+          return "paddingRight";
+        case "pb":
+          return "paddingBottom";
+        case "ps":
+          return "paddingInlineStart";
+        case "pe":
+          return "paddingInlineEnd";
+        default:
+          return "paddingTop"; // bare "p-N" sets every side equally
+      }
+    case "size":
+      return prefix === "h" ? "height" : "width"; // w- and size- both read width
+    case "leading":
+    default:
+      return "lineHeight";
+  }
+}
+
+/** sr-only (used to measure font-size/radius/shadow/tracking/leading)
+ *  forces width/height to 1px and padding to 0 as part of its recipe —
+ *  exactly the box-model properties padding/size need to measure, so
+ *  those two categories get an off-screen probe instead that leaves
+ *  the box model untouched. */
+function probeStyleFor(category: TokenMatch["category"]): React.CSSProperties | undefined {
+  if (category !== "padding" && category !== "size") return undefined;
+  return {
+    position: "fixed",
+    top: -9999,
+    left: -9999,
+    visibility: "hidden",
+    pointerEvents: "none",
+    // width/height are ignored on inline elements (the probe is a
+    // <span>) — only padding actually needs an off-screen probe at
+    // all, but block display doesn't affect padding's computed value.
+    display: "block",
+  };
+}
+
 /** Reads the resolved (px) value of a size-ish token by applying the
  *  real Tailwind class to a visually hidden element — a raw `rem`/`em`
  *  CSS-variable value (e.g. ".875rem") isn't what "equals 14px" means. */
@@ -53,21 +116,7 @@ function usePixelValue(match: TokenMatch) {
   const ref = React.useRef<HTMLSpanElement>(null);
   const [value, setValue] = React.useState("");
 
-  const styleProp = React.useMemo((): keyof CSSStyleDeclaration => {
-    switch (match.category) {
-      case "radius":
-        return "borderRadius";
-      case "shadow":
-        return "boxShadow";
-      case "font-size":
-        return "fontSize";
-      case "tracking":
-        return "letterSpacing";
-      case "leading":
-      default:
-        return "lineHeight";
-    }
-  }, [match.category]);
+  const styleProp = React.useMemo(() => stylePropFor(match), [match]);
 
   React.useEffect(() => {
     const read = () => {
@@ -136,10 +185,16 @@ function FontWeightValue({ match }: { match: TokenMatch }) {
 function PixelValue({ match }: { match: TokenMatch }) {
   const { ref, value } = usePixelValue(match);
   const formatted = formatPixelValue(match, value);
+  const offscreenStyle = probeStyleFor(match.category);
 
   return (
     <>
-      <span ref={ref} aria-hidden className={cn("sr-only", match.className)}>
+      <span
+        ref={ref}
+        aria-hidden
+        className={offscreenStyle ? match.className : cn("sr-only", match.className)}
+        style={offscreenStyle}
+      >
         Aa
       </span>
       <code className="whitespace-nowrap font-mono text-xs text-foreground" title={value}>
