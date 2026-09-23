@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@/components/icons";
 
 import { getDependencyGroups } from "@/lib/dependencies";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -106,9 +106,10 @@ export default function DependenciesPage() {
         <div>
           <h2 className="text-lg font-semibold">2. Icon pack</h2>
           <p className="text-sm text-muted-foreground">
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">lucide-react</code> — usata in tutta
-            l&apos;app, sia nei demo dei componenti che nella UI di questo stesso playground. Nessuna
-            pagina dedicata elenca ancora le icone disponibili.
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">@hugeicons/react</code> (glifi da{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">@hugeicons/core-free-icons</code>,
+            stile Stroke Rounded) — usata in tutta l&apos;app, sia nei demo dei componenti che nella UI
+            di questo stesso playground. Nessuna pagina dedicata elenca ancora le icone disponibili.
           </p>
         </div>
       </section>

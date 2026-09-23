@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Palette } from "lucide-react";
+import { ArrowRight, Palette } from "@/components/icons";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -109,7 +109,7 @@ export default function Home() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
-            {["Geist", "lucide-react", "radix-ui", "sonner"].map((s) => (
+            {["Geist", "@hugeicons/react", "radix-ui", "sonner"].map((s) => (
               <span
                 key={s}
                 className="rounded-md bg-muted px-2 py-1 font-mono text-xs font-medium text-muted-foreground"

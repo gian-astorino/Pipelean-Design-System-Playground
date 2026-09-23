@@ -72,4 +72,4 @@ pnpm dlx shadcn@latest add <componente>
 - [Tailwind CSS v4](https://tailwindcss.com) (config CSS-first, nessun `tailwind.config.js`)
 - [shadcn/ui](https://ui.shadcn.com) (stile new-york)
 - [next-themes](https://github.com/pacocoursey/next-themes) per il toggle chiaro/scuro
-- [lucide-react](https://lucide.dev) per le icone
+- [Hugeicons](https://hugeicons.com) (`@hugeicons/react` + `@hugeicons/core-free-icons`) per le icone

@@ -14,7 +14,7 @@ import {
   Inbox,
   Plus,
   Search,
-} from "lucide-react";
+} from "@/components/icons";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import { DemoControls, DemoStack, ErrorToggle, VariantSelect } from "@/components/catalog/demo-controls";

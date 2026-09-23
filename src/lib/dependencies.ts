@@ -67,8 +67,8 @@ const DEPENDENCY_INFO: Record<string, { description: string; usedBy?: string }> 
     description: "Sistema di notifiche toast.",
     usedBy: "Sonner / Toaster",
   },
-  "lucide-react": {
-    description: "Icon pack usato in tutta l'app — ogni icona nei demo e nella UI arriva da qui.",
+  "@hugeicons/react": {
+    description: "Icon pack usato in tutta l'app — ogni icona nei demo e nella UI arriva da qui (glifi da @hugeicons/core-free-icons, stile Stroke Rounded).",
   },
   "next-themes": {
     description: "Gestisce il toggle light/dark/system e la persistenza della preferenza.",
@@ -106,7 +106,7 @@ const GROUPS: { category: string; description: string; packages: string[] }[] = 
       "vaul",
       "input-otp",
       "sonner",
-      "lucide-react",
+      "@hugeicons/react",
     ],
   },
   {
